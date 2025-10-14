@@ -1,0 +1,25 @@
+package com.ram.local_weather.networkservices
+
+import com.ram.local_weather.models.ForeCastResponse
+import com.ram.local_weather.models.WeatherResponse
+import retrofit2.Response
+import retrofit2.http.GET
+import retrofit2.http.Query
+
+interface WeatherService {
+    @GET("data/2.5/weather")
+    suspend fun getWeatherData(
+        @Query("lat") lat: Double,
+        @Query("lon") long: Double,
+        @Query("appid") appKey: String = "app_key" ,
+        @Query("units") units: String = "metric"
+    ) : Response<WeatherResponse>
+
+    @GET("data/2.5/forecast")
+    suspend fun getForeCastData(
+        @Query("lat") lat: Double,
+        @Query("lon") long: Double,
+        @Query("appid") appid: String = "app_key",
+        @Query("units") units : String = "metric"
+    ): Response<ForeCastResponse>
+}
