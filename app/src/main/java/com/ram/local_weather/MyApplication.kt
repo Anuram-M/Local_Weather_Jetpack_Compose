@@ -1,13 +1,31 @@
 package com.ram.local_weather
 
 import android.app.Application
+import androidx.hilt.work.HiltWorkerFactory
+import androidx.work.Configuration
 import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
+
+//@HiltAndroidApp
+//class MyApplication(override val workManagerConfiguration: Configuration) : Application(), Configuration.Provider {
+//
+//
+//    override fun onCreate() {
+//        super.onCreate()
+//    }
+//}
 
 @HiltAndroidApp
-class MyApplication : Application() {
+class MyApplication : Application(), Configuration.Provider {
 
-    override fun onCreate() {
-        super.onCreate()
+    @Inject
+    lateinit var workerFactory: HiltWorkerFactory
 
-    }
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder()
+            .setWorkerFactory(workerFactory)
+            .setMinimumLoggingLevel(android.util.Log.DEBUG)
+            .build()
+
 }
+

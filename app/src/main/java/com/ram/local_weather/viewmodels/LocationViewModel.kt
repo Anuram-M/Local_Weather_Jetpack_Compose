@@ -66,6 +66,8 @@ class LocationViewModel @Inject constructor(
     val uiLogicState = _uiState.asStateFlow()
 
     init {
+        lastExecutedTime = null
+        stopLocationUpdate()
         checkAppState()
     }
 
@@ -146,10 +148,10 @@ class LocationViewModel @Inject constructor(
                     viewModelScope.launch(Dispatchers.IO) {
                         val weatherResponse =
                             weatherRepository.getWeatherData(address.latitude, address.longitude)
-                        _weatherData.value = weatherResponse.data
-                        delay(200)
                         val foreCastResponse =
                             weatherRepository.getForeCaseData(address.latitude, address.longitude)
+                        delay(200)
+                        _weatherData.value = weatherResponse.data
                         _forecastData.value = foreCastResponse.data
                     }
                 }
