@@ -7,9 +7,10 @@ import android.content.IntentFilter
 import android.location.Address
 import android.location.LocationManager
 import android.os.Build
-import android.widget.Toast
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -46,7 +47,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
@@ -72,6 +72,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -79,10 +80,13 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import coil.compose.AsyncImage
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
 import com.ram.local_weather.ForecastItemComposable
 import com.ram.local_weather.models.WeatherResponse
 import com.ram.local_weather.ui.theme.LocalWeatherTheme
 import com.ram.local_weather.ui.theme.sarpanchFont
+import com.ram.local_weather.util.BackgroundSelectorUtil
 import com.ram.local_weather.util.CheckerUtil
 import com.ram.local_weather.util.WorkManagerUtil
 import com.ram.local_weather.viewmodels.LocationViewModel
@@ -97,25 +101,51 @@ import kotlin.math.round
 fun WeatherDataScreenComposable(
     locationViewModel: LocationViewModel
 ) {
+    Log.d("CHOR", "weather: starting")
     val context = LocalContext.current.applicationContext
+
+    val firebaseDatabase = Firebase.firestore
     var isRefreshing by remember { mutableStateOf(false) }
 
     val refreshState = rememberPullToRefreshState()
 
     val coroutineScope = rememberCoroutineScope()
+
     var isLoading by remember {
         mutableStateOf(false)
     }
+
+    firebaseDatabase.collection("location").get().addOnSuccessListener { result ->
+        Log.d("RESTP", "WeatherDataScreenComposable: $result")
+        for(item in result) {
+            Log.d("RESTP", "WeatherDataScreenComposable: ${item["city list"]}")
+        }
+
+    }.addOnFailureListener {
+
+    }
+
     LaunchedEffect(Unit) {
         isLoading = true
         locationViewModel.getLocationUpdates()
     }
+
+//    LaunchedEffect(Unit) {
+//        val periodicCheckRequest = PeriodicWorkRequestBuilder<IconChangerWorker>(2,TimeUnit.MINUTES).setInitialDelay(100, TimeUnit.SECONDS).build()
+//
+//        WorkManager.getInstance(context)
+//            .enqueueUniquePeriodicWork("UNiq2", ExistingPeriodicWorkPolicy.KEEP, periodicCheckRequest)
+//
+//    }
 
 
     val location by locationViewModel.location
     val address by locationViewModel.address
     val weatherData by locationViewModel.weatherData
     val forecastData by locationViewModel.forecastData
+    var searchWeatherData by locationViewModel.searchWeather
+    val refreshCount by locationViewModel.refreshCount
+
 
     val mAddress = if (address != null) {
         "${address!!.subLocality}, ${address!!.locality}"
@@ -126,8 +156,33 @@ fun WeatherDataScreenComposable(
     val canShowWeatherCard = weatherData != null
 
     var lastKnownState by remember { mutableStateOf<Boolean?>(null) }
+    var isSearchWeather by remember {
+        mutableStateOf(false)
+    }
 
+    var mainBg by remember {
+        mutableStateOf(Color.Gray)
+    }
+    var isDay by remember {
+        mutableStateOf(true)
+    }
+    val animatedBackground by animateColorAsState(
+        targetValue = mainBg,
+        animationSpec = tween(2000)
+    )
+    val animatedDayAccent by animateColorAsState(
+        targetValue = if(isDay) Color.White else Color.Black,
+        animationSpec = tween(2000)
+    )
+    var animationWidget by remember {
+        mutableStateOf("")
+    }
+
+    var searchList by remember {
+        mutableStateOf(listOf(""))
+    }
     DisposableEffect(Unit) {
+
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 if (intent?.action == LocationManager.PROVIDERS_CHANGED_ACTION) {
@@ -135,8 +190,6 @@ fun WeatherDataScreenComposable(
                     if (isEnabled != lastKnownState) {
                         lastKnownState = isEnabled
                         locationViewModel.checkAppState()
-                        Toast.makeText(context, "toggle againn", Toast.LENGTH_SHORT)
-                            .show()
                     }
                 }
             }
@@ -151,111 +204,176 @@ fun WeatherDataScreenComposable(
 
     LaunchedEffect(weatherData) {
         if (weatherData != null) {
+//            animationWidget = weatherData?.weather!![0].main
             isLoading = false
             isRefreshing = false
         }
     }
-    when {
-        location != null -> {
+
+    LaunchedEffect(searchWeatherData) {
+        if(searchWeatherData!=null) {
+            isDay = searchWeatherData?.weather!![0].icon.endsWith('d')
+//            animationWidget = searchWeatherData?.weather!![0].main
+            mainBg = BackgroundSelectorUtil().backgroundChoice(searchWeatherData?.weather!![0].id)
+        }
+        if(searchWeatherData == null && weatherData != null) {
+//            animationWidget = weatherData?.weather!![0].main
+            isDay = weatherData?.weather!![0].icon.endsWith('d')
+            mainBg = BackgroundSelectorUtil().backgroundChoice(weatherData?.weather!![0].id)
+        }
+    }
+
+    LaunchedEffect(refreshCount) {
+        weatherData?.let {
+            if(searchWeatherData == null) {
+//                animationWidget = weatherData?.weather!![0].main
+            }
+            isDay = weatherData?.weather!![0].icon.endsWith('d')
+            Log.d("POPOI", "WeatherDataScreenComposable: icon : ${weatherData?.weather!![0].icon}, is it day : ${weatherData?.weather!![0].icon.endsWith('d')}, $isDay")
+            mainBg = BackgroundSelectorUtil().backgroundChoice(weatherData?.weather!![0].id)
+        }
+    }
+    LaunchedEffect(Unit)  {
             val workRequest =
                 PeriodicWorkRequestBuilder<WorkManagerUtil>(15, TimeUnit.MINUTES).build()
             WorkManager.getInstance(context)
                 .enqueueUniquePeriodicWork("UNiq", ExistingPeriodicWorkPolicy.KEEP, workRequest)
-        }
     }
 
-    PullToRefreshBox(
-        modifier = Modifier
-            .systemBarsPadding()
-            .fillMaxWidth(),
-        contentAlignment = Alignment.TopCenter,
-        state = refreshState,
-        isRefreshing = isRefreshing,
-        onRefresh = {
-            coroutineScope.launch {
-                isRefreshing = true
-                locationViewModel.getLocationUpdates()
-                delay(1500)
-                isRefreshing = false
-            }
-        },
 
-        indicator = {
-            PullToRefreshDefaults.Indicator(
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush = Brush.linearGradient(
+                    colors = listOf(animatedBackground, animatedDayAccent)
+                )
+            ))
+
+//        if(!animationWidget.isNullOrEmpty()) {
+//            when(animationWidget.lowercase()) {
+//                "rain" -> RainAnimation(
+//                    modifier = Modifier.fillMaxSize(),
+//                    rainIntensity = 300, rainSpeed = 200f, angle = -10f
+//                )
+//                "clouds" -> MovingCloudsAnimation(
+//                    modifier = Modifier.fillMaxSize(),
+//                )
+//                "snow" -> Snowfall()
+//                "drizzle" -> RainAnimation(
+//                    modifier = Modifier.fillMaxSize(),
+//                    rainIntensity = 30, rainSpeed = 50f, angle = 0f
+//                )
+//            }
+//        }
+        Column(modifier = Modifier.systemBarsPadding()) {
+            NewSearchBarExample(
+                locationViewModel,
+                isSearchWeather,
+                onSearch = { isSearchWeather = true },
+                onClear = { locationViewModel.resetSearchWeather() },
+                listOf("")
+            )
+            PullToRefreshBox(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.TopCenter,
                 state = refreshState,
                 isRefreshing = isRefreshing,
-                containerColor = Color.Black,
-                color = Color.Red
-            )
-        }
+                onRefresh = {
+                    coroutineScope.launch {
+                        isRefreshing = true
+                        locationViewModel.getLocationUpdates()
+                        delay(1500)
+                        isRefreshing = false
+                    }
+                },
 
-    ) {
-        when {
-            isLoading || isRefreshing -> {
-                ShimmerPlaceholderList()
-            }
+                indicator = {
+                    PullToRefreshDefaults.Indicator(
+                        state = refreshState,
+                        isRefreshing = isRefreshing,
+                        containerColor = Color.Black,
+                        color = Color.Red
+                    )
+                }
 
-            weatherData != null -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .systemBarsPadding()
-                        .background(Color.White),
-                    contentAlignment = Alignment.TopCenter
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxHeight()
-                            .padding(10.dp)
-                            .verticalScroll(rememberScrollState()),
-                        verticalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        NewSearchBarExample()
-                        Card(
+            ) {
+
+                when {
+                    isLoading || isRefreshing -> {
+                        ShimmerPlaceholderList()
+                    }
+
+                    searchWeatherData != null -> {
+                        SearchWeatherDataScreen(searchWeatherData!!, address)
+                    }
+
+                    weatherData != null -> {
+                        Box(
                             modifier = Modifier
-                                .padding(10.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = Color(0xFFE9E9E9)
-                            ), elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
+                                .fillMaxSize(),
+                            contentAlignment = Alignment.TopCenter
                         ) {
-
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(20.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
+                                    .fillMaxHeight()
+                                    .padding(10.dp)
+                                    .verticalScroll(rememberScrollState()),
                                 verticalArrangement = Arrangement.SpaceBetween
                             ) {
 
-                                LocalityCard(address, sarpanchFont)
+                                Card(
+                                    modifier = Modifier
+                                        .padding(10.dp),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = Color(0xFFE0E0E0)
+                                    ), elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
+                                ) {
 
-                                WeatherDataCard(weatherData, textColor, sarpanchFont)
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(20.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.SpaceBetween
+                                    ) {
 
-                            }
+                                        LocalityCard(address, sarpanchFont)
 
-                        }
+                                        WeatherDataCard(weatherData, textColor, sarpanchFont)
 
-                        AnimatedVisibility(
-                            visible = forecastData != null,
-                        ) {
-                            LazyRow(
-                                modifier = Modifier
-                                    .padding(horizontal = 5.dp)
-                                    .weight(1f)
-                            ) {
-                                items(forecastData?.list!!) { item ->
-                                    ForecastItemComposable(item, sarpanchFont)
+                                    }
+
+                                }
+
+                                AnimatedVisibility(
+                                    visible = forecastData != null,
+                                ) {
+                                    LazyRow(
+                                        modifier = Modifier
+                                            .padding(horizontal = 5.dp)
+                                    ) {
+                                        items(forecastData?.list!!) { item ->
+                                            ForecastItemComposable(item, sarpanchFont)
+                                        }
+                                    }
                                 }
                             }
                         }
-
                     }
 
+                    weatherData != null && isSearchWeather -> {
+                        SearchWeatherDataScreen(weatherData!!, address)
+                    }
                 }
             }
         }
     }
+
+
 }
 
 @Composable
@@ -269,8 +387,8 @@ fun LocalityCard(address: Address?, spFont: FontFamily) {
         ) {
             address?.subLocality?.let {
                 Text(
-                    it,
-                    fontSize = 24.sp,
+                    address?.subLocality!!,
+                    fontSize = 20.sp,
                     color = Color.Black,
                     fontWeight = FontWeight.Bold,
                     fontFamily = spFont
@@ -286,7 +404,7 @@ fun LocalityCard(address: Address?, spFont: FontFamily) {
                     it,
                     fontSize = 24.sp,
                     color = Color.Black,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Normal,
                     fontFamily = spFont
                 )
             }
@@ -303,36 +421,49 @@ fun WeatherDataCard(weatherData: WeatherResponse?, textColor: Color, spFont: Fon
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            Row(horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 2.dp)) {
+                AsyncImage(
+                    modifier = Modifier
+                        .width(100.dp)
+                        .height(100.dp),
+                    model = "https://openweathermap.org/img/wn/${weatherData!!.weather[0].icon}@4x.png",
+                    contentDescription = "Weather Icon",
+                    contentScale = ContentScale.Crop
+                )
+                Column(modifier = Modifier
+                    .fillMaxHeight()
+                    .weight(1f), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        round(weatherData!!.main.temp).toInt().toString() + "º C",
+                        fontSize = 60.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = textColor,
+                        modifier = Modifier.padding(horizontal = 10.dp),
+                        fontFamily = spFont
+                    )
+
+                }
+
+            }
+
             Text(
-                round(weatherData!!.main.temp).toInt().toString() + "º C",
-                fontSize = 65.sp,
-                fontWeight = FontWeight.Bold,
+                weatherData!!.weather[0].description.replaceFirstChar { it.uppercase() },
                 color = textColor,
-                modifier = Modifier.padding(top = 20.dp, bottom = 10.dp),
+                fontSize = 18.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
                 fontFamily = spFont
-            )
-            Text(
-                weatherData!!.weather[0].description,
-                color = textColor,
-                fontSize = 20.sp,
-                fontFamily = spFont
-            )
-            AsyncImage(
-                modifier = Modifier
-                    .width(120.dp)
-                    .height(120.dp),
-                model = "https://openweathermap.org/img/wn/${weatherData!!.weather[0].icon}@4x.png",
-                contentDescription = "Weather Icon",
-                contentScale = ContentScale.Fit
             )
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 15.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Box(
                     modifier = Modifier
                         .background(
-                            Color(0xFFDFDFDF),
+                            Color(0xFFCFCFCF),
                             shape = RoundedCornerShape(10.dp)
                         )
                         .weight(1f),
@@ -358,7 +489,7 @@ fun WeatherDataCard(weatherData: WeatherResponse?, textColor: Color, spFont: Fon
                 Box(
                     modifier = Modifier
                         .background(
-                            Color(0xFFDFDFDF),
+                            Color(0xFFCFCFCF),
                             shape = RoundedCornerShape(10.dp)
                         )
                         .weight(1f),
@@ -397,7 +528,7 @@ fun ShimmerPlaceholderList() {
     val transition = rememberInfiniteTransition(label = "")
     val translateAnim by transition.animateFloat(
         initialValue = 0f,
-        targetValue = 1000f,
+        targetValue = 500f,
         animationSpec = infiniteRepeatable(
             animation = tween(1000, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
@@ -405,177 +536,31 @@ fun ShimmerPlaceholderList() {
         label = ""
     )
 
-    val brush = Brush.linearGradient(
-        colors = shimmerColors,
-        start = Offset(translateAnim - 200f, translateAnim - 200f),
-        end = Offset(translateAnim, translateAnim)
-    )
-
-    var typeText by remember {
-        mutableStateOf("")
+    val brush = remember(translateAnim){
+        Brush.linearGradient(
+            colors = shimmerColors,
+            start = Offset(translateAnim - 200f, translateAnim - 200f),
+            end = Offset(translateAnim, translateAnim)
+        )
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.LightGray)
     ) {
-        Column {
-            OutlinedTextField(
-                enabled = false,
-                colors = TextFieldDefaults.colors(),
-                value = typeText,
-                onValueChange = { typeText = it },
-                label = { Text("Label2") },   // label should be in a lambda
-                modifier = Modifier
-                    .padding(10.dp)
-                    .fillMaxWidth()
-            )
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .padding(15.dp)
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Top,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(10.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(brush)
-                            .padding(horizontal = 10.dp, vertical = 5.dp)
-                            .width(200.dp)
-                            .height(20.dp)
-                    )
-                    Spacer(modifier = Modifier.height(15.dp))
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(brush)
-                            .padding(horizontal = 10.dp, vertical = 5.dp)
-                            .width(140.dp)
-                            .height(20.dp)
-                    )
-                    Spacer(modifier = Modifier.height(15.dp))
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(brush)
-                            .padding(horizontal = 10.dp, vertical = 5.dp)
-                            .size(100.dp)
-                    )
-                    Spacer(modifier = Modifier.height(15.dp))
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(brush)
-                            .padding(horizontal = 10.dp, vertical = 5.dp)
-                            .width(140.dp)
-                            .height(20.dp)
-                    )
-                    Spacer(modifier = Modifier.height(15.dp))
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceAround,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(brush)
-                                .padding(horizontal = 10.dp, vertical = 5.dp)
-                                .width(100.dp)
-                                .height(50.dp)
-                        )
-                        Spacer(modifier = Modifier.width(30.dp))
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(brush)
-                                .padding(horizontal = 10.dp, vertical = 5.dp)
-                                .width(100.dp)
-                                .height(50.dp)
-                        )
-                    }
-                }
-            }
+        Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.SpaceEvenly) {
 
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .padding(15.dp)
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Top,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(10.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(brush)
-                            .padding(horizontal = 10.dp, vertical = 5.dp)
-                            .width(200.dp)
-                            .height(20.dp)
-                    )
-                    Spacer(modifier = Modifier.height(15.dp))
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(brush)
-                            .padding(horizontal = 10.dp, vertical = 5.dp)
-                            .width(140.dp)
-                            .height(20.dp)
-                    )
-                    Spacer(modifier = Modifier.height(15.dp))
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(brush)
-                            .padding(horizontal = 10.dp, vertical = 5.dp)
-                            .size(100.dp)
-                    )
-                    Spacer(modifier = Modifier.height(15.dp))
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(brush)
-                            .padding(horizontal = 10.dp, vertical = 5.dp)
-                            .width(140.dp)
-                            .height(20.dp)
-                    )
-                    Spacer(modifier = Modifier.height(15.dp))
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceAround,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(brush)
-                                .padding(horizontal = 10.dp, vertical = 5.dp)
-                                .width(100.dp)
-                                .height(50.dp)
-                        )
-                        Spacer(modifier = Modifier.width(30.dp))
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(brush)
-                                .padding(horizontal = 10.dp, vertical = 5.dp)
-                                .width(100.dp)
-                                .height(50.dp)
-                        )
-                    }
-                }
-            }
+            ShimmerCard(Modifier
+                .fillMaxWidth()
+                .weight(1f),
+                brush)
+            Spacer(Modifier.height(10.dp))
+            ShimmerCard(Modifier
+                .fillMaxWidth()
+                .weight(1f),
+                brush)
+
+
         }
 
 
@@ -583,15 +568,89 @@ fun ShimmerPlaceholderList() {
 
 }
 
+@Composable
+fun ShimmerCard(modifier: Modifier, brush: Brush) {
+    Card(
+        modifier = modifier
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(brush)
+//                    .padding(horizontal = 10.dp, vertical = 5.dp)
+                    .width(200.dp)
+                    .height(20.dp)
+            )
+            Spacer(modifier = Modifier.height(25.dp))
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(brush)
+//                    .padding(horizontal = 10.dp, vertical = 5.dp)
+                    .width(140.dp)
+                    .height(20.dp)
+            )
+            Spacer(modifier = Modifier.height(25.dp))
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(brush)
+//                    .padding(horizontal = 10.dp, vertical = 5.dp)
+                    .size(100.dp)
+            )
+            Spacer(modifier = Modifier.height(25.dp))
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(brush)
+//                    .padding(horizontal = 10.dp, vertical = 5.dp)
+                    .width(140.dp)
+                    .height(20.dp)
+            )
+            Spacer(modifier = Modifier.height(25.dp))
+            Row(
+                horizontalArrangement = Arrangement.SpaceAround,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(brush)
+//                        .padding(horizontal = 10.dp, vertical = 5.dp)
+                        .width(100.dp)
+                        .height(50.dp)
+                )
+                Spacer(modifier = Modifier.width(30.dp))
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(brush)
+//                        .padding(horizontal = 10.dp, vertical = 5.dp)
+                        .width(100.dp)
+                        .height(50.dp)
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NewSearchBarExample() {
+fun NewSearchBarExample(locationViewModel: LocationViewModel, isSearchWeather: Boolean, onSearch: () -> Unit, onClear: () -> Unit, searchList: List<String>) {
     var query by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
 
     SearchBar(
         colors = SearchBarDefaults.colors(
-            containerColor = Color(0xFFDFDFDF),
+            containerColor = Color(0xFFE0E0E0),
             dividerColor = Color.Black,
         ),
         expanded = expanded,
@@ -599,21 +658,24 @@ fun NewSearchBarExample() {
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(max = 400.dp)
-            .background(Color.White)
-            .padding(start = 5.dp, end = 5.dp, bottom = 5.dp),
+//            .background(Color.White)
+            .padding(start = 20.dp, end = 20.dp, bottom = 10.dp),
         inputField = {
             SearchBarDefaults.InputField(
                 colors = TextFieldDefaults.colors(
-                    unfocusedTextColor = Color.Gray,
+                    unfocusedTextColor = Color.Black,
                     focusedTextColor = Color.Black,
                     cursorColor = Color.Black
                 ),
                 query = query,
                 onQueryChange = { query = it },
-                onSearch = { expanded = false },
+                onSearch = {
+                    expanded = false
+                    locationViewModel.getWeatherDataWithLocation(query)
+                           },
                 expanded = expanded,
                 onExpandedChange = { expanded = it },
-                placeholder = { Text("Search items...", color = Color.Gray) },
+                placeholder = { Text("Search weather by location...", color = Color.Gray) },
                 leadingIcon = {
                     Icon(
                         Icons.Default.Search,
@@ -623,7 +685,11 @@ fun NewSearchBarExample() {
                 },
                 trailingIcon = {
                     if (query.isNotEmpty()) {
-                        IconButton(onClick = { query = "" }) {
+                        IconButton(
+                            onClick = {
+                                query = ""
+                                onClear()
+                            }) {
                             Icon(
                                 Icons.Default.Close,
                                 contentDescription = "Clear",
@@ -634,38 +700,54 @@ fun NewSearchBarExample() {
                 }
             )
         },
-        tonalElevation = 6.dp,
-        shadowElevation = 10.dp
+        tonalElevation = 0.dp,
+        shadowElevation = 4.dp
     ) {
-        val sampleData = listOf("Thanjavur", "Chennai", "Coimbatore", "Bangalore", "Delhi")
-        val filteredList = sampleData.filter {
+//        val sampleData = listOf("Thanjavur", "Chennai", "Coimbatore", "Bangalore", "Delhi")
+        val filteredList = searchList.filter {
             it.contains(query, ignoreCase = true)
         }
 
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp)
-                .background(Color(0xFFDFDFDF))
-                .heightIn(max = 300.dp)
-                .padding(5.dp)
-        ) {
-            items(filteredList) { item ->
-                Row(
+        if(filteredList.isNotEmpty()) {
+            filteredList.isNotEmpty().let {
+                LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable {
-                            query = item
-                            expanded = false
-                        }
-                        .padding(16.dp)
+                        .height(300.dp)
+                        .background(Color(0xFFDFDFDF))
+                        .heightIn(max = 300.dp)
+                        .padding(5.dp)
                 ) {
-                    Icon(Icons.Default.Search, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(item)
+                    items(filteredList) { item ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    query = item
+
+//                            isSearchWeather = true
+                                    locationViewModel.getWeatherDataWithLocation(item)
+                                    expanded = false
+                                    onSearch
+                                }
+                                .padding(16.dp)
+                        ) {
+                            Icon(Icons.Default.Search, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(item)
+                        }
+                    }
                 }
             }
+        } else {
+            Box(modifier = Modifier
+                .height(100.dp)
+                .fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Text("No Suggestions available!!")
+            }
+
         }
+
     }
 }
 

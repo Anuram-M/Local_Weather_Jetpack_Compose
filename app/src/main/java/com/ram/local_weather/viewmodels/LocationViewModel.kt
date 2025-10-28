@@ -62,8 +62,14 @@ class LocationViewModel @Inject constructor(
     lateinit var locationCallback: LocationCallback
 
 
-    private var _uiState = MutableStateFlow<UILOGIC_STATE>(UILOGIC_STATE.LOGIC_PERMISSION_NEEDED)
+    private var _uiState = MutableStateFlow<UILOGIC_STATE>(UILOGIC_STATE.LOGIC_LOADING)
     val uiLogicState = _uiState.asStateFlow()
+
+    var _searchWeatherData = mutableStateOf<WeatherResponse?>(null)
+    val searchWeather = _searchWeatherData
+
+    var _refreshCount = mutableStateOf(0)
+    val refreshCount = _refreshCount
 
     init {
         lastExecutedTime = null
@@ -94,7 +100,7 @@ class LocationViewModel @Inject constructor(
 
         val request = LocationRequest.Builder(
             Priority.PRIORITY_HIGH_ACCURACY,
-            5000L
+            2000L
         ).build()
 
         locationCallback = object : LocationCallback() {
@@ -103,7 +109,9 @@ class LocationViewModel @Inject constructor(
                 super.onLocationResult(result)
                 result.lastLocation?.let {
                     _location.value = it
+                    Log.d("REMREM", "onLocationResult: before checking")
                     if(canExecuteFunction()) {
+                        Log.d("REMREM", "onLocationResult: after checking")
                         getPlaceName(application.applicationContext, it)
                     }
                     _isLoading.value = false
@@ -153,6 +161,7 @@ class LocationViewModel @Inject constructor(
                         delay(200)
                         _weatherData.value = weatherResponse.data
                         _forecastData.value = foreCastResponse.data
+                        _refreshCount.value = _refreshCount.value + 1
                     }
                 }
             }
@@ -176,5 +185,18 @@ class LocationViewModel @Inject constructor(
         } else {
             return  false
         }
+    }
+
+    fun getWeatherDataWithLocation(location: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            Log.d("RESTP", "getWeatherDataWithLocation: calling the data")
+            val result = weatherRepository.getWeatherDataFromLocation(location)
+            _searchWeatherData.value = result.data
+
+        }
+    }
+
+    fun resetSearchWeather() {
+        _searchWeatherData.value = null
     }
 }

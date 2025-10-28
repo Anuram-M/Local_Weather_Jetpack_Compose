@@ -3,7 +3,9 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("org.jetbrains.kotlin.kapt")
-    id("com.google.dagger.hilt.android")//added for hilt dependency
+    id("com.google.dagger.hilt.android")
+    alias(libs.plugins.google.gms.google.services)
+    alias(libs.plugins.google.firebase.crashlytics)
 }
 
 android {
@@ -58,6 +60,9 @@ dependencies {
     //added for hilt dependency
     implementation("com.google.dagger:hilt-android:2.52")
     implementation(libs.androidx.hilt.common)
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.crashlytics)
 //    implementation(libs.androidx.hilt.work) // Check latest version
     kapt("com.google.dagger:hilt-compiler:2.52")
     implementation("androidx.hilt:hilt-work:1.2.0") // compatible with WorkManager 2.9.0

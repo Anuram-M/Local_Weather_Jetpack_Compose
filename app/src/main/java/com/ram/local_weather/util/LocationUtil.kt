@@ -10,7 +10,9 @@ import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.Priority
+import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
+import kotlin.coroutines.resume
 
 
 class LocationUtil @Inject constructor(
@@ -18,21 +20,21 @@ class LocationUtil @Inject constructor(
 ) {
 
     lateinit var location: Location
-    lateinit var locationCallback: LocationCallback
-
+    private lateinit var locationCallback: LocationCallback
 
     @SuppressLint("MissingPermission")
-    fun getLocationDetails(): Location? {
+    suspend fun getLocationDetails(): Location? = suspendCancellableCoroutine { cont ->
         val locationRequest =
             LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000L).setMaxUpdates(1).build()
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
                 super.onLocationResult(result)
                 result.lastLocation?.let {
-                    Log.d("UTILPOL", "onLocationResult: 12345 : ${result.lastLocation}")
+                    Log.d("WORKWORK", "onLocationResult: 12345 : ${result.lastLocation}")
                     location = it
-                    return@let location
-                }
+                    cont.resume(it)
+                    fusedLocationProviderClient.removeLocationUpdates(this)
+                } ?: cont.resume(null)
             }
         }
         fusedLocationProviderClient.requestLocationUpdates(
@@ -40,7 +42,9 @@ class LocationUtil @Inject constructor(
             locationCallback,
             Looper.getMainLooper()
         )
-        return null
+        cont.invokeOnCancellation {
+            fusedLocationProviderClient.removeLocationUpdates(locationCallback)
+        }
     }
 
 

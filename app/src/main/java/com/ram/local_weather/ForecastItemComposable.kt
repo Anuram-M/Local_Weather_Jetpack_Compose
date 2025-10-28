@@ -33,8 +33,8 @@ fun ForecastItemComposable(forecastItem: ForecastItem, spFont: FontFamily) {
         modifier = Modifier
             .width(150.dp)
             .padding(10.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFE9E9E9))
+        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp,),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFE0E0E0))
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -60,7 +60,7 @@ fun ForecastItemComposable(forecastItem: ForecastItem, spFont: FontFamily) {
             Text(
                 date,
                 fontSize = 14.sp,
-                modifier = Modifier.padding(bottom = 5.dp),
+//                modifier = Modifier.padding(bottom = 5.dp),
                 color = textColor,
                 fontFamily = spFont,
                 fontWeight = FontWeight.Bold
@@ -68,7 +68,7 @@ fun ForecastItemComposable(forecastItem: ForecastItem, spFont: FontFamily) {
             Text(
                 time,
                 fontSize = 14.sp,
-                modifier = Modifier.padding(bottom = 10.dp),
+//                modifier = Modifier.padding(bottom = 10.dp),
                 color = textColor,
                 fontFamily = spFont
             )

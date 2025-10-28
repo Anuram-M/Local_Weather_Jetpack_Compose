@@ -8,10 +8,8 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.ram.local_weather.repository.WeatherRepository
-import com.ram.local_weather.viewmodels.LocationViewModel
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import javax.inject.Inject
 
 @HiltWorker
 class WorkManagerUtil @AssistedInject constructor(
@@ -24,20 +22,35 @@ class WorkManagerUtil @AssistedInject constructor(
 
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     override suspend fun doWork(): Result {
+        Log.d("WORKWORK", "doWork: before calling")
         val location = locationUtil.getLocationDetails()
-        location?.let {
+        Log.d("WORKWORK", "doWork: ${location}")
+        if (location == null) {
+            return Result.retry()
+        }
+        location.let {
             val result = repository.getWeatherData(
                 it.latitude,
                 it.longitude
             )
             val data = result.data
-            NotificationUtil().sendNotification(
+//            NotificationUtil().sendNotification(
+//                context,
+//                arrayOf(
+//                    data?.weather!![0].description,
+//                    "%.2f".format((data.wind.speed ?: 0.0) * 3.6)
+//                ),
+//                data
+//            )
+            NotificationUtil().sendWeatherNotification(
                 context,
-                arrayOf(data?.weather!![0].description, "%.2f".format((data.wind.speed ?: 0.0) * 3.6))
+                data?.weather!![0].main,
+                data?.main?.temp ?: 0.0,
+                data?.wind?.speed ?: 0.0,
+                data?.name ?: "Unknown"
             )
             Log.d("WORKWORK", "doWork: $data")
         }
-
         return Result.success()
     }
 }
