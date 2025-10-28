@@ -24,8 +24,9 @@ fun WeatherHomeScreen(locationViewModel : LocationViewModel = hiltViewModel()) {
 
     NavHost(
         navController = navController,
-        startDestination = "permission"
+        startDestination = "loading"
     ) {
+        composable("loading") { LoadingScreen() }
         composable("permission") { PermissionScreenComposable(locationViewModel) }
         composable("location") { LocationToggleComposable(context, locationViewModel) }
         composable("weather") { WeatherDataScreenComposable(locationViewModel) }
@@ -53,6 +54,14 @@ fun WeatherHomeScreen(locationViewModel : LocationViewModel = hiltViewModel()) {
                 locationViewModel.updatePermission(true)
                 if (navController.currentDestination?.route != "weather") {
                     navController.navigate("weather") {
+                        popUpTo(0)
+                    }
+                }
+            }
+
+            UILOGIC_STATE.LOGIC_LOADING -> {
+                if(navController.currentDestination?.route != "loading") {
+                    navController.navigate("loading") {
                         popUpTo(0)
                     }
                 }
