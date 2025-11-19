@@ -24,6 +24,8 @@ jobs:
 #        run: ./gradlew clean testDebug
    lint:
        name: Run lint check
+       runs_on: ubuntu-latest
+
        steps:
          - name: Checkout code
            uses: actions/checkout@v4
