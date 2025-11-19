@@ -5,5 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.compose) apply false
 
     //added for hilt dependency
-    id("com.google.dagger.hilt.android") version "2.51.1" apply false // Check latest version
+    id("com.google.dagger.hilt.android") version "2.51.1" apply false
+    alias(libs.plugins.google.gms.google.services) apply false
+    alias(libs.plugins.google.firebase.crashlytics) apply false // Check latest version
 }
