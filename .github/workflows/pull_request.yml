@@ -24,7 +24,7 @@ jobs:
 #        run: ./gradlew clean testDebug
    lint:
        name: Run lint check
-       runs_on: ubuntu-latest
+       runs-on: ubuntu-latest
 
        steps:
          - name: Checkout code
