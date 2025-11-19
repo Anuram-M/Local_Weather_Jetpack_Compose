@@ -11,7 +11,7 @@ class WeatherRepository @Inject constructor(private val weatherService: WeatherS
 
     suspend fun getWeatherData(lat: Double, long: Double) : NETWORK_RESULT<WeatherResponse> {
         val result = weatherService.getWeatherData(lat, long)
-        Log.d("RESPOT", "getWeatherData: response")
+        Log.d("RESPOT", "getWeatherData: response ${result.isSuccessful}")
         return if(result.isSuccessful) {
             Log.d("RESPOT", "getWeatherData: ${result.body()}")
             NETWORK_RESULT.Success(result.body())
@@ -24,6 +24,16 @@ class WeatherRepository @Inject constructor(private val weatherService: WeatherS
         val result = weatherService.getForeCastData(lat, long)
         return if(result.isSuccessful) {
            NETWORK_RESULT.Success(result.body())
+        } else {
+            NETWORK_RESULT.Error(null, result.message())
+        }
+    }
+
+    suspend fun getWeatherDataFromLocation(location: String) : NETWORK_RESULT<WeatherResponse> {
+        val result = weatherService.getWeatherDataFromLocation(location)
+        Log.d("RESTP", "getWeatherDataFromLocation: ${result.isSuccessful}")
+        return if(result.isSuccessful) {
+            NETWORK_RESULT.Success(result.body())
         } else {
             NETWORK_RESULT.Error(null, result.message())
         }
