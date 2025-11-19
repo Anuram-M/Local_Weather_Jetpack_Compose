@@ -102,6 +102,7 @@ dependencies {
     testImplementation("androidx.arch.core:core-testing:2.2.0")
     testImplementation("com.google.dagger:hilt-android-testing:2.52")
     kaptTest("com.google.dagger:hilt-compiler:2.52")
+    testImplementation("org.mockito:mockito-inline:5.2.0")
 
 
 
