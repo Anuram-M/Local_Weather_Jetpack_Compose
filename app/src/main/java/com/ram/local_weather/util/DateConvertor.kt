@@ -26,7 +26,7 @@ class DateConvertor {
     fun getDateAndTime(epoch: Long) : Pair<String, String> {
         val dateTime = convertEpoch(epoch)
 
-        val dateFormatter = DateTimeFormatter.ofPattern("dd-mm-yyyy")
+        val dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
         val timeFormatter = DateTimeFormatter.ofPattern("hh-mm a")
 
         val dateValue = dateFormatter.format(dateTime)
