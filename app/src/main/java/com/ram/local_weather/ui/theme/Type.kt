@@ -44,6 +44,12 @@ val vtFont = FontFamily(
     Font(R.font.vt323_regular)
 )
 
+val poppinsFont = FontFamily(
+    Font(R.font.poppins_regular),
+    Font(R.font.poppins_semibold),
+    Font(R.font.poppins_bold),
+)
+
 val Typography = Typography(
     bodyLarge = TextStyle(
         fontFamily = FontFamily.Default,
