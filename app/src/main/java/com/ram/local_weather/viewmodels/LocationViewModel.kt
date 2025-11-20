@@ -1,6 +1,7 @@
 package com.ram.local_weather.viewmodels
 
 import android.annotation.SuppressLint
+import android.app.Application
 import android.content.Context
 import android.location.Address
 import android.location.Geocoder
@@ -35,8 +36,9 @@ import javax.inject.Inject
 @HiltViewModel
 class LocationViewModel @Inject constructor(
     val fusedLocationProviderClient: FusedLocationProviderClient,
-    private val application: MyApplication,
-    private val weatherRepository: WeatherRepository
+    private val application: Application,
+    private val weatherRepository: WeatherRepository,
+    private val checkerUtil: CheckerUtil
 ) : AndroidViewModel(application) {
 
     var _location = mutableStateOf<Location?>(null)
@@ -77,15 +79,16 @@ class LocationViewModel @Inject constructor(
         checkAppState()
     }
 
-    fun checkAppState() {
+    fun checkAppState() : UILOGIC_STATE{
         when {
-           !CheckerUtil().checkLocationPermission(application) -> _uiState.value = UILOGIC_STATE.LOGIC_PERMISSION_NEEDED
-            !CheckerUtil().checkLocationEnabled(application) -> {
+           !checkerUtil.checkLocationPermission(application) -> _uiState.value = UILOGIC_STATE.LOGIC_PERMISSION_NEEDED
+            !checkerUtil.checkLocationEnabled(application) -> {
                  stopLocationUpdate()
                 _uiState.value = UILOGIC_STATE.LOGIC_LOCATION_NEEDED
             }
             else -> _uiState.value = UILOGIC_STATE.LOGIC_APP_READY
         }
+        return _uiState.value
     }
 
     @SuppressLint("MissingPermission")
@@ -127,8 +130,9 @@ class LocationViewModel @Inject constructor(
     }
 
     @SuppressLint("MissingPermission")
-    fun updatePermission(isGranted: Boolean) {
+    fun updatePermission(isGranted: Boolean) : Boolean {
         _permissionGranted.value = isGranted
+        return _permissionGranted.value
     }
 
     fun stopLocationUpdate() {
@@ -189,8 +193,11 @@ class LocationViewModel @Inject constructor(
 
     fun getWeatherDataWithLocation(location: String) {
         viewModelScope.launch(Dispatchers.IO) {
+            stopLocationUpdate()
+            weatherData.value = null
             Log.d("RESTP", "getWeatherDataWithLocation: calling the data")
             val result = weatherRepository.getWeatherDataFromLocation(location)
+            Log.d("RESTP", "getWeatherDataWithLocation: result of the data : $result")
             _searchWeatherData.value = result.data
 
         }

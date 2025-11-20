@@ -47,7 +47,7 @@ fun Snowfall(modifier: Modifier = Modifier, flakeCount: Int = 100) {
         flakes.forEach { flake ->
             val x = (flake.startX * size.width + sin(time * 6f + flake.seed) * 20f) % size.width
             val y = (flake.startY * size.height + (time * flake.speed * size.height)) % size.height
-            drawSnowflake(center = Offset(x, y), size = flake.size, color = Color.White.copy(alpha = 0.9f))
+            drawSnowflake(center = Offset(x, y), size = flake.size, color = Color.LightGray.copy(alpha = 0.9f))
         }
     }
 }

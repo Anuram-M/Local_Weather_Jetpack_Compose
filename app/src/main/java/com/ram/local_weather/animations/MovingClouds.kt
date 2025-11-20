@@ -110,7 +110,7 @@ fun MovingCloudsAnimation(
         modifier = modifier
             .fillMaxWidth()
             .height(200.dp)
-            .background(Color(0xFF87CEEB)) // Sky blue
+//            .background(Color(0xFF87CEEB)) // Sky blue
     ) {
         val width = size.width
         val height = size.height

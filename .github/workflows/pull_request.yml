@@ -61,3 +61,34 @@ jobs:
         with:
           name: unit-test-report
           path: app/build/reports/tests/testDebugUnitTest/
+
+  instrumentation-test:
+    needs: unit-test
+    name: Run instrumentation test
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: 17
+          cache: 'gradle'
+
+      - name: Execute gradlew permission command
+        run: chmod +x gradlew
+
+      - name: Run instrumentation test
+        uses: reactivecircus/android-emulator-runner@v4
+        with:
+          api-level: 28
+          script: ./gradlew connectedDebugAndroidTest
+
+      - name: Upload instrumentation test report
+        uses: actions/upload-artifact@v4
+        with:
+          name: Instrumentation-report
+          path: app/build/reports/androidTests/connected/

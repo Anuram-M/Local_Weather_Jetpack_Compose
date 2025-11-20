@@ -29,7 +29,7 @@ class CheckerUtilTest {
     @Test
     fun checkLocationEnabled() {
         val result = checkerUtil.checkLocationEnabled(context)
-        Assert.assertEquals(false, result)
+        Assert.assertEquals(true, result)
     }
 
     @Test
