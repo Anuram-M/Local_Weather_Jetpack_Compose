@@ -24,25 +24,30 @@ class LocationUtil @Inject constructor(
 
     @SuppressLint("MissingPermission")
     suspend fun getLocationDetails(): Location? = suspendCancellableCoroutine { cont ->
+//        Log.d("WORKWORK", "onLocationResult: 12345 : before getting the location")
         val locationRequest =
             LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000L).setMaxUpdates(1).build()
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
                 super.onLocationResult(result)
-                result.lastLocation?.let {
-                    Log.d("WORKWORK", "onLocationResult: 12345 : ${result.lastLocation}")
-                    location = it
-                    cont.resume(it)
-                    fusedLocationProviderClient.removeLocationUpdates(this)
-                } ?: cont.resume(null)
+                if(cont.isActive) {
+                    result.lastLocation?.let {
+                        Log.d("WORKWORK", "onLocationResult: 12345 : ${result.lastLocation}")
+                        location = it
+                        cont.resume(it)
+                    } ?: cont.resume(null)
+                }
+                fusedLocationProviderClient.removeLocationUpdates(this)
             }
         }
+//        Log.d("WORKWORK", "onLocationResult: 12345 : calling the fusedlocation")
         fusedLocationProviderClient.requestLocationUpdates(
             locationRequest,
             locationCallback,
             Looper.getMainLooper()
         )
         cont.invokeOnCancellation {
+//            Log.d("WORKWORK", "onLocationResult: 12345 : cancelling the fusedlocation")
             fusedLocationProviderClient.removeLocationUpdates(locationCallback)
         }
     }

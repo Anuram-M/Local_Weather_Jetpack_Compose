@@ -152,7 +152,7 @@ fun rippleEffect() {
                     drawCircle(
                         radius = radius.value,
                         color = Color.Black.copy(alpha = alpha.value),
-                        style = Stroke(width = 50f),
+                        style = Stroke(width = 80f),
                     )
                 }
             }
