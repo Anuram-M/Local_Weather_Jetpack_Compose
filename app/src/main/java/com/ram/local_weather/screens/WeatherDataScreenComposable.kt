@@ -83,9 +83,12 @@ import coil.compose.AsyncImage
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import com.ram.local_weather.ForecastItemComposable
+import com.ram.local_weather.animations.MovingCloudsAnimation
+import com.ram.local_weather.animations.RainAnimation
+import com.ram.local_weather.animations.Snowfall
 import com.ram.local_weather.models.WeatherResponse
 import com.ram.local_weather.ui.theme.LocalWeatherTheme
-import com.ram.local_weather.ui.theme.sarpanchFont
+import com.ram.local_weather.ui.theme.poppinsFont
 import com.ram.local_weather.util.BackgroundSelectorUtil
 import com.ram.local_weather.util.CheckerUtil
 import com.ram.local_weather.util.WorkManagerUtil
@@ -115,14 +118,24 @@ fun WeatherDataScreenComposable(
         mutableStateOf(false)
     }
 
-    firebaseDatabase.collection("location").get().addOnSuccessListener { result ->
-        Log.d("RESTP", "WeatherDataScreenComposable: $result")
-        for(item in result) {
-            Log.d("RESTP", "WeatherDataScreenComposable: ${item["city list"]}")
+    var searchDefaultList by remember {
+        mutableStateOf(listOf(""))
+    }
+    LaunchedEffect(Unit) {
+
+        while (true) {
+            firebaseDatabase.collection("location").get().addOnSuccessListener { result ->
+                Log.d("RESTP", "WeatherDataScreenComposable: $result")
+                for (item in result) {
+                    searchDefaultList = item["city list"] as List<String>
+                    Log.d("RESTP", "WeatherDataScreenComposable: ${item["city list"]}")
+                }
+
+            }.addOnFailureListener {
+
+            }
+            delay(60000)
         }
-
-    }.addOnFailureListener {
-
     }
 
     LaunchedEffect(Unit) {
@@ -204,7 +217,7 @@ fun WeatherDataScreenComposable(
 
     LaunchedEffect(weatherData) {
         if (weatherData != null) {
-//            animationWidget = weatherData?.weather!![0].main
+            animationWidget = weatherData?.weather!![0].main
             isLoading = false
             isRefreshing = false
         }
@@ -213,11 +226,11 @@ fun WeatherDataScreenComposable(
     LaunchedEffect(searchWeatherData) {
         if(searchWeatherData!=null) {
             isDay = searchWeatherData?.weather!![0].icon.endsWith('d')
-//            animationWidget = searchWeatherData?.weather!![0].main
+            animationWidget = searchWeatherData?.weather!![0].main
             mainBg = BackgroundSelectorUtil().backgroundChoice(searchWeatherData?.weather!![0].id)
         }
         if(searchWeatherData == null && weatherData != null) {
-//            animationWidget = weatherData?.weather!![0].main
+            animationWidget = weatherData?.weather!![0].main
             isDay = weatherData?.weather!![0].icon.endsWith('d')
             mainBg = BackgroundSelectorUtil().backgroundChoice(weatherData?.weather!![0].id)
         }
@@ -226,7 +239,7 @@ fun WeatherDataScreenComposable(
     LaunchedEffect(refreshCount) {
         weatherData?.let {
             if(searchWeatherData == null) {
-//                animationWidget = weatherData?.weather!![0].main
+                animationWidget = weatherData?.weather!![0].main
             }
             isDay = weatherData?.weather!![0].icon.endsWith('d')
             Log.d("POPOI", "WeatherDataScreenComposable: icon : ${weatherData?.weather!![0].icon}, is it day : ${weatherData?.weather!![0].icon.endsWith('d')}, $isDay")
@@ -234,6 +247,7 @@ fun WeatherDataScreenComposable(
         }
     }
     LaunchedEffect(Unit)  {
+        WorkManager.getInstance(context).cancelAllWork()
             val workRequest =
                 PeriodicWorkRequestBuilder<WorkManagerUtil>(15, TimeUnit.MINUTES).build()
             WorkManager.getInstance(context)
@@ -251,29 +265,33 @@ fun WeatherDataScreenComposable(
                 )
             ))
 
-//        if(!animationWidget.isNullOrEmpty()) {
-//            when(animationWidget.lowercase()) {
-//                "rain" -> RainAnimation(
-//                    modifier = Modifier.fillMaxSize(),
-//                    rainIntensity = 300, rainSpeed = 200f, angle = -10f
-//                )
-//                "clouds" -> MovingCloudsAnimation(
-//                    modifier = Modifier.fillMaxSize(),
-//                )
-//                "snow" -> Snowfall()
-//                "drizzle" -> RainAnimation(
-//                    modifier = Modifier.fillMaxSize(),
-//                    rainIntensity = 30, rainSpeed = 50f, angle = 0f
-//                )
-//            }
-//        }
+        if(!animationWidget.isNullOrEmpty()) {
+            when(animationWidget.lowercase()) {
+                "rain" -> RainAnimation(
+                    modifier = Modifier.fillMaxSize(),
+                    rainIntensity = 300, rainSpeed = 200f, angle = -10f
+                )
+                "clouds" -> MovingCloudsAnimation(
+                    modifier = Modifier.fillMaxSize(),
+                )
+                "snow" -> Snowfall()
+                "drizzle" -> RainAnimation(
+                    modifier = Modifier.fillMaxSize(),
+                    rainIntensity = 30, rainSpeed = 50f, angle = 0f
+                )
+            }
+        }
         Column(modifier = Modifier.systemBarsPadding()) {
             NewSearchBarExample(
                 locationViewModel,
                 isSearchWeather,
                 onSearch = { isSearchWeather = true },
-                onClear = { locationViewModel.resetSearchWeather() },
-                listOf("")
+                onClear = {
+                    isLoading = true
+                    locationViewModel.getLocationUpdates()
+                    locationViewModel.resetSearchWeather() },
+                searchDefaultList,
+                poppinsFont
             )
             PullToRefreshBox(
                 modifier = Modifier
@@ -307,7 +325,7 @@ fun WeatherDataScreenComposable(
                     }
 
                     searchWeatherData != null -> {
-                        SearchWeatherDataScreen(searchWeatherData!!, address)
+                        SearchWeatherDataScreen(searchWeatherData!!)
                     }
 
                     weatherData != null -> {
@@ -341,9 +359,9 @@ fun WeatherDataScreenComposable(
                                         verticalArrangement = Arrangement.SpaceBetween
                                     ) {
 
-                                        LocalityCard(address, sarpanchFont)
+                                        LocalityCard(address, poppinsFont)
 
-                                        WeatherDataCard(weatherData, textColor, sarpanchFont)
+                                        WeatherDataCard(weatherData, textColor, poppinsFont)
 
                                     }
 
@@ -357,16 +375,12 @@ fun WeatherDataScreenComposable(
                                             .padding(horizontal = 5.dp)
                                     ) {
                                         items(forecastData?.list!!) { item ->
-                                            ForecastItemComposable(item, sarpanchFont)
+                                            ForecastItemComposable(item, poppinsFont)
                                         }
                                     }
                                 }
                             }
                         }
-                    }
-
-                    weatherData != null && isSearchWeather -> {
-                        SearchWeatherDataScreen(weatherData!!, address)
                     }
                 }
             }
@@ -457,7 +471,7 @@ fun WeatherDataCard(weatherData: WeatherResponse?, textColor: Color, spFont: Fon
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 15.dp),
+                    .padding(top = 25.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Box(
@@ -465,14 +479,14 @@ fun WeatherDataCard(weatherData: WeatherResponse?, textColor: Color, spFont: Fon
                         .background(
                             Color(0xFFCFCFCF),
                             shape = RoundedCornerShape(10.dp)
-                        )
+                        ).padding(vertical = 5.dp)
                         .weight(1f),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
                             text = "Humidity",
-                            fontSize = 16.sp,
+                            fontSize = 14.sp,
                             color = textColor,
                             fontWeight = FontWeight.Bold,
                             fontFamily = spFont
@@ -491,14 +505,14 @@ fun WeatherDataCard(weatherData: WeatherResponse?, textColor: Color, spFont: Fon
                         .background(
                             Color(0xFFCFCFCF),
                             shape = RoundedCornerShape(10.dp)
-                        )
+                        ).padding(vertical = 5.dp)
                         .weight(1f),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
                             text = "Wind",
-                            fontSize = 16.sp,
+                            fontSize = 14.sp,
                             color = textColor,
                             fontWeight = FontWeight.Bold,
                             fontFamily = spFont
@@ -548,7 +562,7 @@ fun ShimmerPlaceholderList() {
         modifier = Modifier
             .fillMaxSize()
     ) {
-        Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.SpaceEvenly) {
+        Column(modifier = Modifier.padding(15.dp), verticalArrangement = Arrangement.SpaceEvenly) {
 
             ShimmerCard(Modifier
                 .fillMaxWidth()
@@ -571,7 +585,10 @@ fun ShimmerPlaceholderList() {
 @Composable
 fun ShimmerCard(modifier: Modifier, brush: Brush) {
     Card(
-        modifier = modifier
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Gray
+        )
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -644,7 +661,14 @@ fun ShimmerCard(modifier: Modifier, brush: Brush) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NewSearchBarExample(locationViewModel: LocationViewModel, isSearchWeather: Boolean, onSearch: () -> Unit, onClear: () -> Unit, searchList: List<String>) {
+fun NewSearchBarExample(
+    locationViewModel: LocationViewModel,
+    isSearchWeather: Boolean,
+    onSearch: () -> Unit,
+    onClear: () -> Unit,
+    searchList: List<String>,
+    poppinsFont: FontFamily
+) {
     var query by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
 
@@ -657,7 +681,7 @@ fun NewSearchBarExample(locationViewModel: LocationViewModel, isSearchWeather: B
         onExpandedChange = { expanded = it },
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(max = 400.dp)
+            .heightIn(max = 350.dp)
 //            .background(Color.White)
             .padding(start = 20.dp, end = 20.dp, bottom = 10.dp),
         inputField = {
@@ -671,11 +695,11 @@ fun NewSearchBarExample(locationViewModel: LocationViewModel, isSearchWeather: B
                 onQueryChange = { query = it },
                 onSearch = {
                     expanded = false
-                    locationViewModel.getWeatherDataWithLocation(query)
+                    locationViewModel.getWeatherDataWithLocation(query.trim())
                            },
                 expanded = expanded,
                 onExpandedChange = { expanded = it },
-                placeholder = { Text("Search weather by location...", color = Color.Gray) },
+                placeholder = { Text("Search weather by location...", color = Color.Gray, fontFamily = poppinsFont, fontSize = 14.sp) },
                 leadingIcon = {
                     Icon(
                         Icons.Default.Search,
@@ -697,7 +721,8 @@ fun NewSearchBarExample(locationViewModel: LocationViewModel, isSearchWeather: B
                             )
                         }
                     }
-                }
+                },
+
             )
         },
         tonalElevation = 0.dp,
@@ -713,7 +738,6 @@ fun NewSearchBarExample(locationViewModel: LocationViewModel, isSearchWeather: B
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(300.dp)
                         .background(Color(0xFFDFDFDF))
                         .heightIn(max = 300.dp)
                         .padding(5.dp)
@@ -730,11 +754,11 @@ fun NewSearchBarExample(locationViewModel: LocationViewModel, isSearchWeather: B
                                     expanded = false
                                     onSearch
                                 }
-                                .padding(16.dp)
+                                .padding(10.dp)
                         ) {
                             Icon(Icons.Default.Search, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(item)
+                            Text(item, fontFamily = poppinsFont)
                         }
                     }
                 }
