@@ -65,7 +65,7 @@ jobs:
   instrumentation-test:
     needs: unit-test
     name: Run instrumentation test
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -84,7 +84,9 @@ jobs:
       - name: Run instrumentation test
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 28
+          api-level: 30
+          target: default
+          arch: x86_64
           script: ./gradlew connectedDebugAndroidTest
 
       - name: Upload instrumentation test report
