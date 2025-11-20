@@ -85,8 +85,10 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 30
-          target: default
+          target: google_apis
           arch: x86_64
+          force-avd-creation: true
+          disable-animations: true
           script: ./gradlew connectedDebugAndroidTest
 
       - name: Upload instrumentation test report
