@@ -82,7 +82,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Run instrumentation test
-        uses: reactivecircus/android-emulator-runner@v4
+        uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 28
           script: ./gradlew connectedDebugAndroidTest
