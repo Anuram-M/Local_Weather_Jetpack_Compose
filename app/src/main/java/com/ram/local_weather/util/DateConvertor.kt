@@ -8,7 +8,7 @@ import java.time.format.DateTimeFormatter
 class DateConvertor {
 
     fun convertEpoch(epoch: Long) : LocalDateTime {
-        return LocalDateTime.ofInstant(Instant.ofEpochSecond(epoch), ZoneId.systemDefault())
+        return LocalDateTime.ofInstant(Instant.ofEpochSecond(epoch), ZoneId.of("Asia/Kolkata"))
     }
 
     fun getDayLabel(epoch: Long) : String {
