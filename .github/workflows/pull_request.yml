@@ -84,12 +84,14 @@ jobs:
       - name: Run instrumentation test
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 30
-          target: google_apis
+          api-level: 29
+          target: default
           arch: x86_64
-          force-avd-creation: true
-          disable-animations: true
-          script: ./gradlew connectedDebugAndroidTest
+          script: |
+            adb wait-for-device
+            adb shell getprop sys.boot_completed
+            ./gradlew connectedDebugAndroidTest
+          emulator-options: "-no-snapshot -noaudio -no-window"
 
       - name: Upload instrumentation test report
         uses: actions/upload-artifact@v4
