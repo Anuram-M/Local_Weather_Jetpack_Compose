@@ -1,0 +1,98 @@
+{
+  "cod": "200",
+  "message": 0,
+  "cnt": 40,
+  "list": [
+    {
+      "dt": 1763445600,
+      "main": {
+        "temp": 280.84,
+        "feels_like": 278.68,
+        "temp_min": 279.19,
+        "temp_max": 280.84,
+        "pressure": 1013,
+        "sea_level": 1013,
+        "grnd_level": 945,
+        "humidity": 86,
+        "temp_kf": 1.65
+      },
+      "weather": [
+        {
+          "id": 501,
+          "main": "Rain",
+          "description": "moderate rain",
+          "icon": "10n"
+        }
+      ],
+      "clouds": {
+        "all": 76
+      },
+      "wind": {
+        "speed": 3.34,
+        "deg": 21,
+        "gust": 7.01
+      },
+      "visibility": 2333,
+      "pop": 1,
+      "rain": {
+        "3h": 3.98
+      },
+      "sys": {
+        "pod": "n"
+      },
+      "dt_txt": "2025-11-18 06:00:00"
+    },
+    {
+      "dt": 1763456400,
+      "main": {
+        "temp": 279.79,
+        "feels_like": 277.69,
+        "temp_min": 277.68,
+        "temp_max": 279.79,
+        "pressure": 1014,
+        "sea_level": 1014,
+        "grnd_level": 948,
+        "humidity": 90,
+        "temp_kf": 2.11
+      },
+      "weather": [
+        {
+          "id": 501,
+          "main": "Rain",
+          "description": "moderate rain",
+          "icon": "10d"
+        }
+      ],
+      "clouds": {
+        "all": 84
+      },
+      "wind": {
+        "speed": 2.9,
+        "deg": 29,
+        "gust": 8.24
+      },
+      "visibility": 226,
+      "pop": 1,
+      "rain": {
+        "3h": 6.08
+      },
+      "sys": {
+        "pod": "d"
+      },
+      "dt_txt": "2025-11-18 09:00:00"
+    }
+  ],
+  "city": {
+    "id": 3163858,
+    "name": "Zocca",
+    "coord": {
+      "lat": 44.34,
+      "lon": 10.99
+    },
+    "country": "IT",
+    "population": 4593,
+    "timezone": 3600,
+    "sunrise": 1763446560,
+    "sunset": 1763480804
+  }
+}
