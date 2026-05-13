@@ -100,12 +100,15 @@ fun SearchedWeather(weatherData: WeatherResponse?, textColor: Color, spFont: Fon
                 contentDescription = "Weather Icon",
                 contentScale = ContentScale.Fit
             )
+
             Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Box(
-                    modifier = Modifier.padding(vertical = 10.dp).weight(1f)
+                    modifier = Modifier
+                        .padding(vertical = 10.dp)
+                        .weight(1f)
                         .background(
                             Color(0xFFCFCFCF),
                             shape = RoundedCornerShape(10.dp)
@@ -115,14 +118,14 @@ fun SearchedWeather(weatherData: WeatherResponse?, textColor: Color, spFont: Fon
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(vertical = 5.dp)) {
                         Text(
-                            text = "High",
+                            text = "Low ↓",
                             fontSize = 14.sp,
                             color = textColor,
                             fontWeight = FontWeight.Bold,
                             fontFamily = spFont
                         )
                         Text(
-                            text = weatherData!!.main.temp_max.toString(),
+                            text = "%.1f".format(weatherData!!.main.temp_min) + " ºC",
                             fontSize = 14.sp,
                             color = textColor,
                             fontFamily = spFont
@@ -143,14 +146,14 @@ fun SearchedWeather(weatherData: WeatherResponse?, textColor: Color, spFont: Fon
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(vertical = 5.dp)) {
                         Text(
-                            text = "Low",
+                            text = "High ↑",
                             fontSize = 14.sp,
                             color = textColor,
                             fontWeight = FontWeight.Bold,
                             fontFamily = spFont
                         )
                         Text(
-                            text = "${weatherData?.main?.temp_min}",
+                            text = "%.1f".format(weatherData!!.main.temp_min) + " ºC",
                             fontSize = 14.sp,
                             color = textColor,
                             fontFamily = spFont
@@ -164,7 +167,9 @@ fun SearchedWeather(weatherData: WeatherResponse?, textColor: Color, spFont: Fon
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Box(
-                    modifier = Modifier.padding(vertical = 10.dp).weight(1f)
+                    modifier = Modifier
+                        .padding(vertical = 10.dp)
+                        .weight(1f)
                         .background(
                             Color(0xFFCFCFCF),
                             shape = RoundedCornerShape(10.dp)
@@ -190,7 +195,9 @@ fun SearchedWeather(weatherData: WeatherResponse?, textColor: Color, spFont: Fon
                 }
                 Spacer(modifier = Modifier.width(20.dp))
                 Box(
-                    modifier = Modifier.padding(vertical = 10.dp).weight(1f)
+                    modifier = Modifier
+                        .padding(vertical = 10.dp)
+                        .weight(1f)
                         .background(
                             Color(0xFFCFCFCF),
                             shape = RoundedCornerShape(10.dp)
@@ -240,13 +247,5 @@ fun SearchLocalityCard(address: WeatherResponse?, spFont: FontFamily) {
             }
 
         }
-    }
-}
-
-@Preview
-@Composable
-fun previewSearchData() {
-    LocalWeatherTheme {
-        SearchWeatherDataScreen(null)
     }
 }

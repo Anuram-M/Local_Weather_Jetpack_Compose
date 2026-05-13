@@ -24,6 +24,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -72,11 +74,13 @@ fun PermissionScreenComposable(locationViewModel: LocationViewModel) {
         when{
             permissios.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
                 locationViewModel.updatePermission(true)
-                showBackgroundPermissionDialog = true
+                locationViewModel.checkAppState()
+//                showBackgroundPermissionDialog = true
             }
             permissios.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
                 locationViewModel.updatePermission(true)
-                showBackgroundPermissionDialog = true
+                locationViewModel.checkAppState()
+//                showBackgroundPermissionDialog = true
             }
             else -> {
 
@@ -183,9 +187,9 @@ fun PermissionScreenComposable(locationViewModel: LocationViewModel) {
             .fillMaxSize()
             .systemBarsPadding()
             .padding(bottom = 20.dp, start = 10.dp, end = 10.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Bottom) {
-            Text(text = "This app requires location permission to work properly", textAlign = TextAlign.Center, fontFamily = poppinsFont, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(10.dp), color = Color.White)
+            Text(text = "This app requires location permission to work properly", textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, fontFamily = poppinsFont, fontSize = 16.sp, modifier = Modifier.padding(10.dp), color = Color.White)
             Button(
-
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E88E5)),
                 onClick = {
                 launcher.launch(
                     arrayOf(
@@ -196,31 +200,22 @@ fun PermissionScreenComposable(locationViewModel: LocationViewModel) {
             }, modifier = Modifier
                     .fillMaxWidth()
                     .padding(5.dp)) {
-                Text("Location Permission", modifier = Modifier.padding(5.dp), fontSize = 16.sp, fontFamily = poppinsFont)
+                Text("Location Permission", color = Color.White, modifier = Modifier.padding(5.dp), fontSize = 16.sp, fontFamily = poppinsFont)
             }
 
-            Button(
-                enabled = !notificationStatus,
-                onClick = {
-                notificationLauncher.launch(
-                    Manifest.permission.POST_NOTIFICATIONS
-                )
-            }, modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(5.dp)) {
-                Text("Notification Permission",  modifier = Modifier.padding(5.dp), fontSize = 16.sp, fontFamily = poppinsFont)
-            }
+//            Button(
+//                enabled = !notificationStatus,
+//                onClick = {
+//                notificationLauncher.launch(
+//                    Manifest.permission.POST_NOTIFICATIONS
+//                )
+//            }, modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(5.dp)) {
+//                Text("Notification Permission",  modifier = Modifier.padding(5.dp), fontSize = 16.sp, fontFamily = poppinsFont)
+//            }
 
         }
 
     }
 }
-
-//@Preview
-//@Composable
-//fun previewPermissionScreen() {
-//    LocalWeatherTheme {
-//        val viewModel : LocationViewModel = hiltViewModel()
-//        PermissionScreenComposable(viewModel)
-//    }
-//}

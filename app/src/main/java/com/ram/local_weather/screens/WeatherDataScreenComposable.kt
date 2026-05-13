@@ -184,7 +184,7 @@ fun WeatherDataScreenComposable(
         animationSpec = tween(2000)
     )
     val animatedDayAccent by animateColorAsState(
-        targetValue = if(isDay) Color.White else Color.Black,
+        targetValue = if(isDay) Color.Black else Color.Black,
         animationSpec = tween(2000)
     )
     var animationWidget by remember {
@@ -265,22 +265,22 @@ fun WeatherDataScreenComposable(
                 )
             ))
 
-        if(!animationWidget.isNullOrEmpty()) {
-            when(animationWidget.lowercase()) {
-                "rain" -> RainAnimation(
-                    modifier = Modifier.fillMaxSize(),
-                    rainIntensity = 300, rainSpeed = 200f, angle = -10f
-                )
-                "clouds" -> MovingCloudsAnimation(
-                    modifier = Modifier.fillMaxSize(),
-                )
-                "snow" -> Snowfall()
-                "drizzle" -> RainAnimation(
-                    modifier = Modifier.fillMaxSize(),
-                    rainIntensity = 30, rainSpeed = 50f, angle = 0f
-                )
-            }
-        }
+//        if(!animationWidget.isNullOrEmpty()) {
+//            when(animationWidget.lowercase()) {
+//                "rain" -> RainAnimation(
+//                    modifier = Modifier.fillMaxSize(),
+//                    rainIntensity = 300, rainSpeed = 200f, angle = -10f
+//                )
+//                "clouds" -> MovingCloudsAnimation(
+//                    modifier = Modifier.fillMaxSize(),
+//                )
+//                "snow" -> Snowfall()
+//                "drizzle" -> RainAnimation(
+//                    modifier = Modifier.fillMaxSize(),
+//                    rainIntensity = 30, rainSpeed = 50f, angle = 0f
+//                )
+//            }
+//        }
         Column(modifier = Modifier.systemBarsPadding()) {
             NewSearchBarExample(
                 locationViewModel,
@@ -448,7 +448,7 @@ fun WeatherDataCard(weatherData: WeatherResponse?, textColor: Color, spFont: Fon
                     .fillMaxHeight()
                     .weight(1f), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        round(weatherData!!.main.temp).toInt().toString() + "º C",
+                        round(weatherData!!.main.temp).toInt().toString() + "ºC",
                         fontSize = 60.sp,
                         fontWeight = FontWeight.Bold,
                         color = textColor,
@@ -468,6 +468,67 @@ fun WeatherDataCard(weatherData: WeatherResponse?, textColor: Color, spFont: Fon
                 modifier = Modifier.fillMaxWidth(),
                 fontFamily = spFont
             )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Box(
+                    modifier = Modifier
+                        .padding(vertical = 10.dp)
+                        .weight(1f)
+                        .background(
+                            Color(0xFFCFCFCF),
+                            shape = RoundedCornerShape(10.dp)
+                        )
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(vertical = 5.dp)) {
+                        Text(
+                            text = "Low ↓",
+                            fontSize = 14.sp,
+                            color = textColor,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = spFont
+                        )
+                        Text(
+                            text = "%.1f".format(weatherData!!.main.temp_min) + "ºC",
+                            fontSize = 14.sp,
+                            color = textColor,
+                            fontFamily = spFont
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.width(20.dp))
+                Box(
+                    modifier = Modifier
+                        .padding(vertical = 10.dp)
+                        .weight(1f)
+                        .background(
+                            Color(0xFFCFCFCF),
+                            shape = RoundedCornerShape(10.dp)
+                        )
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(vertical = 5.dp)) {
+                        Text(
+                            text = "High ↑",
+                            fontSize = 14.sp,
+                            color = textColor,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = spFont
+                        )
+                        Text(
+                            text = "%.1f".format(weatherData!!.main.temp_min) + "ºC",
+                            fontSize = 14.sp,
+                            color = textColor,
+                            fontFamily = spFont
+                        )
+                    }
+                }
+            }
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -518,7 +579,7 @@ fun WeatherDataCard(weatherData: WeatherResponse?, textColor: Color, spFont: Fon
                             fontFamily = spFont
                         )
                         Text(
-                            text = "%.2f".format((weatherData?.wind?.speed ?: 0.0) * 3.6) + " km/h",
+                            text = "%.1f".format((weatherData?.wind?.speed ?: 0.0) * 3.6) + " km/h",
                             fontSize = 14.sp,
                             color = textColor,
                             fontFamily = spFont
@@ -765,7 +826,7 @@ fun NewSearchBarExample(
             }
         } else {
             Box(modifier = Modifier
-                .height(100.dp)
+                .fillMaxHeight()
                 .fillMaxWidth(), contentAlignment = Alignment.Center) {
                 Text("No Suggestions available!!")
             }
