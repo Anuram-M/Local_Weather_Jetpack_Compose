@@ -58,7 +58,7 @@
 | Feature | Description |
 |---|---|
 | ⚡ **Fetch current weather** | Current location's weather is fetched using GPS coordinates |
-| 🔍 **Remote location weather** | Through searchbar input user can see weather of any available locations |
+| 🔍 **Remote location weather** | Through searchbar input, the user can see the weather of any available locations |
 | 🔔 **Background fetch with notification** | In progress |
 
 ---
@@ -96,27 +96,27 @@
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-username/your-app-name.git
+git clone https://github.com/Anuram-M/Local_Weather_Jetpack_Compose.git
 
 # 2. Navigate to the project directory
-cd your-app-name
+cd Local_Weather_Jetpack_Compose
 
 # 3. Open in Android Studio
 # File → Open → select the project folder
 
-# 4. Setup API key
-This project uses API key from OpenWeatherMap
-Sign-in to the portal and get the key
-Create an environment variable in your PC
+# 4. Set up API key
+This project uses an API key from OpenWeatherMap
+Sign in to the portal and get the key
+Create an environment variable on your PC
 Use that in place of the API key
 
 # 5. Sync and Test
 Sync Gradle and run it
-If there is any error verify the cause in the console
+If there is any error, verify the cause in the console
 ```
 
 ```bash
-# Or build directly from command line
+# Or build directly from the command line
 ./gradlew assembleDebug
 ```
 
@@ -140,6 +140,8 @@ v1.0  ████████░░░░░░░░░░░░  🔧  [ ] We
 - [x] Fetch current weather — Complete
 - [x] Fetch queried weather - Complete
 - [ ] Background Notification — *in progress*
+- [ ] Refined color palette
+- [ ] Themes light/dark
 - [ ] Tablet / large screen optimization
 
 > Have an idea? [Open a feature request](../../issues/new) — contributions are welcome!
@@ -155,7 +157,7 @@ Copyright (c) 2026 Your Name
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
+in the Software without restriction, including, without limitation, the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software.
 ```
