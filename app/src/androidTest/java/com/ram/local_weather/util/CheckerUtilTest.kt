@@ -1,6 +1,7 @@
 package com.ram.local_weather.util
 
 import android.content.Context
+import android.os.Build
 import androidx.test.core.app.ApplicationProvider
 import org.junit.After
 import org.junit.Assert
@@ -35,6 +36,10 @@ class CheckerUtilTest {
     @Test
     fun checkNotificationPermission() {
         val result = checkerUtil.checkNotificationPermission(context)
-        Assert.assertEquals(false, result)
+        if (Build.VERSION.SDK_INT >= 33) {
+            Assert.assertEquals(false, result)
+        } else {
+            Assert.assertTrue(result)
+        }
     }
 }

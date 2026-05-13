@@ -21,13 +21,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -51,6 +54,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.location.Priority
 import com.ram.local_weather.R
+import com.ram.local_weather.ui.theme.poppinsFont
 import com.ram.local_weather.viewmodels.LocationViewModel
 
 @Composable
@@ -77,7 +81,7 @@ fun LocationToggleComposable(context: Context, locationViewModel: LocationViewMo
             .background(
                 brush = bgBrush
             )
-            .padding(10.dp), contentAlignment = Alignment.Center
+            .padding(0.dp), contentAlignment = Alignment.Center
     ) {
         Box(modifier = Modifier.height(300.dp), contentAlignment = Alignment.Center) {
 
@@ -96,21 +100,30 @@ fun LocationToggleComposable(context: Context, locationViewModel: LocationViewMo
             contentAlignment = Alignment.BottomCenter
         ) {
             Column(
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+                verticalArrangement = Arrangement.Bottom,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .systemBarsPadding()
+                    .padding(bottom = 20.dp, start = 10.dp, end = 10.dp)
             ) {
                 Text(
                     "The app requires GPS to fetch the current location data!",
                     textAlign = TextAlign.Center,
                     fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
+                    fontFamily = poppinsFont,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(10.dp),
                     color = Color.White
                 )
-                Button(onClick = {
+                Spacer(modifier = Modifier.height(10.dp))
+                Button(
+                    modifier = Modifier.fillMaxWidth().padding(5.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E88E5)),
+                    onClick = {
                     showLocationToggle(context, locationViewModel, launcher)
                 }) {
-                    Text("Turn on Location", modifier = Modifier.padding(5.dp), fontSize = 16.sp)
+                    Text("Turn on Location", modifier = Modifier.padding(3.dp), fontSize = 16.sp, color = Color.White, fontFamily = poppinsFont)
                 }
             }
 
