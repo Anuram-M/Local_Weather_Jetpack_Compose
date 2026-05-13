@@ -1,0 +1,171 @@
+<div align="center">
+
+<!-- BANNER / LOGO -->
+<img src="https://placehold.co/900x280/0A0A0A/00C853?text=LOCAL+WEATHER&font=montserrat" alt="App Banner" width="100%" style="border-radius: 10px;" />
+
+<br/>
+<br/>
+
+<!-- BADGES -->
+![Platform](https://img.shields.io/badge/Platform-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
+![Language](https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)
+![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)
+![Min SDK](https://img.shields.io/badge/Min%20SDK-24-00C853?style=for-the-badge)
+![License](https://img.shields.io/badge/License-MIT-FFC107?style=for-the-badge)
+![Build](https://img.shields.io/badge/Build-Passing-00C853?style=for-the-badge)
+
+<br/>
+
+### 🚀 *For knowing the weather and forecast in your location and other locations.*
+
+[**Report Bug**](../../issues)  ·  [**Request Feature**](../../issues)
+
+</div>
+
+---
+
+## 📋 Table of Contents
+
+- [About](#-about)
+- [Visuals](#-visuals)
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [Installation](#-installation)
+- [Roadmap](#-roadmap)
+
+---
+
+## 🧭 About
+
+> **Local Weather** is an Android application built with Kotlin and Jetpack Compose that fetches local weather data through OpenWeatherMap api. It requires GPS to properly fetch your current location data(at the moment + forecast for the next 7 days), and also you can check the weather of a specific place you wish to know(weather at the moment only). On App relaunch it would check the permission and then if the GPS is enabled or not and proceed to home screen.
+
+---
+
+## 🎬 Visuals
+
+<div align="center">
+
+| Permission | GPS Check | Home |
+|:-----------:|:--------------:|:--------:|
+| <img src="assets/location_permission.png" width="220"/> | <img src="assets/gps_check.png" width="220"/> | <img src="assets/home.png" width="220"/> |
+
+</div>
+
+---
+
+## ✨ Features
+
+| Feature | Description |
+|---|---|
+| ⚡ **Fetch current weather** | Current location's weather is fetched using GPS coordinates |
+| 🔍 **Remote location weather** | Through searchbar input user can see weather of any available locations |
+| 🔔 **Background fetch with notification** | In progress |
+
+---
+
+## 🛠 Tech Stack
+
+<div align="center">
+
+| Layer | Technology |
+|---|---|
+| **Language** | ![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=flat-square&logo=kotlin&logoColor=white) |
+| **UI** | ![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-4285F4?style=flat-square&logo=jetpackcompose&logoColor=white) |
+| **Architecture** | `MVVM` + `Clean Architecture` |
+| **DI** | ![Hilt](https://img.shields.io/badge/Hilt-34A853?style=flat-square&logo=google&logoColor=white) |
+| **Async** | ![Coroutines](https://img.shields.io/badge/Coroutines-7F52FF?style=flat-square&logo=kotlin&logoColor=white) + `Flow` |
+| **Networking** | ![Retrofit](https://img.shields.io/badge/Retrofit-48B983?style=flat-square) + `OkHttp` |
+| **Navigation** | `Compose Navigation` |
+| **Testing** | `JUnit4` + `Espresso` + `Compose UI Tests` |
+| **Build** | ![Gradle](https://img.shields.io/badge/Gradle-02303A?style=flat-square&logo=gradle&logoColor=white) with `Version Catalogs` |
+
+</div>
+
+---
+
+## 📦 Installation
+
+### Prerequisites
+
+- Android Studio **Hedgehog** (2023.1.1) or newer
+- JDK **17**
+- Android SDK with **API Level 24+**
+- A device or emulator running **Android 7.0 (Nougat)** or above
+
+### Clone & Build
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/your-username/your-app-name.git
+
+# 2. Navigate to the project directory
+cd your-app-name
+
+# 3. Open in Android Studio
+# File → Open → select the project folder
+
+# 4. Setup API key
+This project uses API key from OpenWeatherMap
+Sign-in to the portal and get the key
+Create an environment variable in your PC
+Use that in place of the API key
+
+# 5. Sync and Test
+Sync Gradle and run it
+If there is any error verify the cause in the console
+```
+
+```bash
+# Or build directly from command line
+./gradlew assembleDebug
+```
+
+### Download APK
+
+| Version | Date | Download |
+|---|---|---|
+| `v1.0` | Coming soon | [![APK](https://img.shields.io/badge/Download-APK-3DDC84?style=for-the-badge&logo=android)](../../releases) |
+
+---
+
+## 🗺 Roadmap
+
+```
+v1.0  ████████████████████  ✅  Initial release
+v1.0  ████████░░░░░░░░░░░░  🔧  [ ] Weather through notification (In progress) 
+```
+
+- [x] Project scaffolding and architecture setup
+- [x] Core UI with Jetpack Compose
+- [x] Fetch current weather — Complete
+- [x] Fetch queried weather - Complete
+- [ ] Background Notification — *in progress*
+- [ ] Tablet / large screen optimization
+
+> Have an idea? [Open a feature request](../../issues/new) — contributions are welcome!
+
+---
+
+## 📄 License
+
+```
+MIT License
+
+Copyright (c) 2026 Your Name
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software.
+```
+
+---
+
+<div align="center">
+
+Made with ❤️ using **Kotlin** & **Jetpack Compose**
+
+⭐ If this project helped you, consider giving it a star!
+
+</div>
