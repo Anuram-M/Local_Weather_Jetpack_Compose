@@ -3,7 +3,7 @@ package com.ram.local_weather.models
 import com.google.gson.annotations.SerializedName
 
 data class ForeCastResponse(
-    val cod: String,
+    val cod: Int,
     val message: Int,
     val cnt: Int,
     val list: List<ForecastItem>,

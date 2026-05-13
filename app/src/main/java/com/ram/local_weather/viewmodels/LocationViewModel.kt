@@ -1,6 +1,7 @@
 package com.ram.local_weather.viewmodels
 
 import android.annotation.SuppressLint
+import android.app.Application
 import android.content.Context
 import android.location.Address
 import android.location.Geocoder
@@ -35,8 +36,9 @@ import javax.inject.Inject
 @HiltViewModel
 class LocationViewModel @Inject constructor(
     val fusedLocationProviderClient: FusedLocationProviderClient,
-    private val application: MyApplication,
-    private val weatherRepository: WeatherRepository
+    private val application: Application,
+    private val weatherRepository: WeatherRepository,
+    private val checkerUtil: CheckerUtil
 ) : AndroidViewModel(application) {
 
     var _location = mutableStateOf<Location?>(null)
@@ -62,22 +64,31 @@ class LocationViewModel @Inject constructor(
     lateinit var locationCallback: LocationCallback
 
 
-    private var _uiState = MutableStateFlow<UILOGIC_STATE>(UILOGIC_STATE.LOGIC_PERMISSION_NEEDED)
+    private var _uiState = MutableStateFlow<UILOGIC_STATE>(UILOGIC_STATE.LOGIC_LOADING)
     val uiLogicState = _uiState.asStateFlow()
 
+    var _searchWeatherData = mutableStateOf<WeatherResponse?>(null)
+    val searchWeather = _searchWeatherData
+
+    var _refreshCount = mutableStateOf(0)
+    val refreshCount = _refreshCount
+
     init {
+        lastExecutedTime = null
+        stopLocationUpdate()
         checkAppState()
     }
 
-    fun checkAppState() {
+    fun checkAppState() : UILOGIC_STATE{
         when {
-           !CheckerUtil().checkLocationPermission(application) -> _uiState.value = UILOGIC_STATE.LOGIC_PERMISSION_NEEDED
-            !CheckerUtil().checkLocationEnabled(application) -> {
+           !checkerUtil.checkLocationPermission(application) -> _uiState.value = UILOGIC_STATE.LOGIC_PERMISSION_NEEDED
+            !checkerUtil.checkLocationEnabled(application) -> {
                  stopLocationUpdate()
                 _uiState.value = UILOGIC_STATE.LOGIC_LOCATION_NEEDED
             }
             else -> _uiState.value = UILOGIC_STATE.LOGIC_APP_READY
         }
+        return _uiState.value
     }
 
     @SuppressLint("MissingPermission")
@@ -92,7 +103,7 @@ class LocationViewModel @Inject constructor(
 
         val request = LocationRequest.Builder(
             Priority.PRIORITY_HIGH_ACCURACY,
-            5000L
+            2000L
         ).build()
 
         locationCallback = object : LocationCallback() {
@@ -101,7 +112,9 @@ class LocationViewModel @Inject constructor(
                 super.onLocationResult(result)
                 result.lastLocation?.let {
                     _location.value = it
+                    Log.d("REMREM", "onLocationResult: before checking")
                     if(canExecuteFunction()) {
+                        Log.d("REMREM", "onLocationResult: after checking")
                         getPlaceName(application.applicationContext, it)
                     }
                     _isLoading.value = false
@@ -117,8 +130,9 @@ class LocationViewModel @Inject constructor(
     }
 
     @SuppressLint("MissingPermission")
-    fun updatePermission(isGranted: Boolean) {
+    fun updatePermission(isGranted: Boolean) : Boolean {
         _permissionGranted.value = isGranted
+        return _permissionGranted.value
     }
 
     fun stopLocationUpdate() {
@@ -146,11 +160,12 @@ class LocationViewModel @Inject constructor(
                     viewModelScope.launch(Dispatchers.IO) {
                         val weatherResponse =
                             weatherRepository.getWeatherData(address.latitude, address.longitude)
-                        _weatherData.value = weatherResponse.data
-                        delay(200)
                         val foreCastResponse =
                             weatherRepository.getForeCaseData(address.latitude, address.longitude)
+                        delay(200)
+                        _weatherData.value = weatherResponse.data
                         _forecastData.value = foreCastResponse.data
+                        _refreshCount.value = _refreshCount.value + 1
                     }
                 }
             }
@@ -174,5 +189,21 @@ class LocationViewModel @Inject constructor(
         } else {
             return  false
         }
+    }
+
+    fun getWeatherDataWithLocation(location: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            stopLocationUpdate()
+            weatherData.value = null
+            Log.d("RESTP", "getWeatherDataWithLocation: calling the data")
+            val result = weatherRepository.getWeatherDataFromLocation(location)
+            Log.d("RESTP", "getWeatherDataWithLocation: result of the data : $result")
+            _searchWeatherData.value = result.data
+
+        }
+    }
+
+    fun resetSearchWeather() {
+        _searchWeatherData.value = null
     }
 }
