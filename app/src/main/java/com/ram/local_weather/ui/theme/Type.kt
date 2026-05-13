@@ -45,9 +45,9 @@ val vtFont = FontFamily(
 )
 
 val poppinsFont = FontFamily(
-    Font(R.font.poppins_regular),
-    Font(R.font.poppins_semibold),
-    Font(R.font.poppins_bold),
+    Font(R.font.poppins_regular, FontWeight.Normal),
+    Font(R.font.poppins_semibold, FontWeight.SemiBold),
+    Font(R.font.poppins_bold, FontWeight.Bold),
 )
 
 val Typography = Typography(
