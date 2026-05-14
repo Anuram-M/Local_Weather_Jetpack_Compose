@@ -6,7 +6,7 @@ import androidx.annotation.RequiresPermission
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.ram.local_weather.repository.WeatherRepository
+import com.ram.core_domain.repository.WeatherRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 

@@ -1,7 +1,6 @@
 package com.ram.local_weather.util
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.location.Location
 import android.os.Looper
 import android.util.Log

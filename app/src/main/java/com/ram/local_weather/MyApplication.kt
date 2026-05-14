@@ -6,15 +6,6 @@ import androidx.work.Configuration
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
-//@HiltAndroidApp
-//class MyApplication(override val workManagerConfiguration: Configuration) : Application(), Configuration.Provider {
-//
-//
-//    override fun onCreate() {
-//        super.onCreate()
-//    }
-//}
-
 @HiltAndroidApp
 class MyApplication : Application(), Configuration.Provider {
 

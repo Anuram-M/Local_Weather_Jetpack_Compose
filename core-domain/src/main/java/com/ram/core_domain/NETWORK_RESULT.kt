@@ -1,4 +1,4 @@
-package com.ram.local_weather
+package com.ram.core_domain
 
 sealed class NETWORK_RESULT<T>(val data: T? = null, val message: String? = null) {
     class Success<T>(data: T?) : NETWORK_RESULT<T>(data)

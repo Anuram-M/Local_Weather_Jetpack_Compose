@@ -18,11 +18,12 @@ import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.Priority
-import com.ram.local_weather.MyApplication
+import com.ram.core_domain.models.ForeCastResponse
+import com.ram.core_domain.models.WeatherResponse
+import com.ram.core_domain.usecase.GetForecastUseCase
+import com.ram.core_domain.usecase.GetLocationDataUseCase
+import com.ram.core_domain.usecase.GetWeatherUseCase
 import com.ram.local_weather.UILOGIC_STATE
-import com.ram.local_weather.models.ForeCastResponse
-import com.ram.local_weather.models.WeatherResponse
-import com.ram.local_weather.repository.WeatherRepository
 import com.ram.local_weather.util.CheckerUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -37,7 +38,9 @@ import javax.inject.Inject
 class LocationViewModel @Inject constructor(
     val fusedLocationProviderClient: FusedLocationProviderClient,
     private val application: Application,
-    private val weatherRepository: WeatherRepository,
+    private val getWeatherUseCase: GetWeatherUseCase,
+    private val getForecastUseCase: GetForecastUseCase,
+    private val getLocationDataUseCase: GetLocationDataUseCase,
     private val checkerUtil: CheckerUtil
 ) : AndroidViewModel(application) {
 
@@ -154,14 +157,12 @@ class LocationViewModel @Inject constructor(
             geocoder.getFromLocation(location.latitude, location.longitude, 1
             ) { addresses ->
                 if (addresses.isNotEmpty()) {
-                    //Address[addressLines=[0:"27 A, EB Colony, Saravanampatti, Coimbatore, Tamil Nadu 641035, India"],feature=27 A,admin=Tamil Nadu,sub-admin=null,locality=Coimbatore,thoroughfare=null,postalCode=641035,countryCode=IN,countryName=India,hasLatitude=true,latitude=11.077613399999999,hasLongitude=true,longitude=76.9987225,phone=null,url=null,extras=null]
                     val address = addresses[0]
                     updateAddress(address)
                     viewModelScope.launch(Dispatchers.IO) {
-                        val weatherResponse =
-                            weatherRepository.getWeatherData(address.latitude, address.longitude)
+                        val weatherResponse = getWeatherUseCase(address.latitude, address.longitude)
                         val foreCastResponse =
-                            weatherRepository.getForeCaseData(address.latitude, address.longitude)
+                            getForecastUseCase(address.latitude, address.longitude)
                         delay(200)
                         _weatherData.value = weatherResponse.data
                         _forecastData.value = foreCastResponse.data
@@ -196,7 +197,7 @@ class LocationViewModel @Inject constructor(
             stopLocationUpdate()
             weatherData.value = null
             Log.d("RESTP", "getWeatherDataWithLocation: calling the data")
-            val result = weatherRepository.getWeatherDataFromLocation(location)
+            val result = getLocationDataUseCase(location)
             Log.d("RESTP", "getWeatherDataWithLocation: result of the data : $result")
             _searchWeatherData.value = result.data
 
