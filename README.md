@@ -132,13 +132,13 @@ If there is any error, verify the cause in the console
 
 ```
 v1.0  ████████████████████  ✅  Initial release
-v1.0  ████████░░░░░░░░░░░░  🔧  [ ] Weather through notification (In progress) 
+v1.0  ████████░░░░░░░░░░░░  🔧  Weather through notification (In progress) 
 ```
 
 - [x] Project scaffolding and architecture setup
 - [x] Core UI with Jetpack Compose
 - [x] Fetch current weather — Complete
-- [x] Fetch queried weather - Complete
+- [x] Fetch queried weather — Complete
 - [ ] Background Notification — *in progress*
 - [ ] Refined color palette
 - [ ] Themes light/dark
