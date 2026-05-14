@@ -1,6 +1,5 @@
 package com.ram.local_weather.util
 
-import android.app.Activity
 import android.content.Context
 
 class AppStateUtil {

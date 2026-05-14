@@ -8,8 +8,8 @@ import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import com.ram.core_domain.models.WeatherResponse
 import com.ram.local_weather.R
-import com.ram.local_weather.models.WeatherResponse
 
 
 class NotificationUtil {

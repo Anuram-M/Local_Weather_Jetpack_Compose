@@ -5,8 +5,11 @@ import android.content.Context
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.ram.core_domain.usecase.GetForecastUseCase
+import com.ram.core_domain.usecase.GetLocationDataUseCase
+import com.ram.core_domain.usecase.GetWeatherUseCase
+import com.ram.core_network.WeatherRepositoryImpl
 import com.ram.local_weather.UILOGIC_STATE
-import com.ram.local_weather.repository.WeatherRepository
 import com.ram.local_weather.util.CheckerUtil
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -39,7 +42,7 @@ class LocationViewModelTest {
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
     @Inject
-    lateinit var weatherRepository: WeatherRepository
+    lateinit var weatherRepository: WeatherRepositoryImpl
 
 
     lateinit var viewModel: LocationViewModel
@@ -49,15 +52,25 @@ class LocationViewModelTest {
 
     lateinit var mockChecker: CheckerUtil
 
+    lateinit var getWeatherUseCase: GetWeatherUseCase
+
+    lateinit var getForecastUseCase: GetForecastUseCase
+
+    lateinit var getLocationDataUseCase: GetLocationDataUseCase
+
     @Before
     fun setUp() {
         hiltAndroidRule.inject()
         mockChecker = mock(CheckerUtil::class.java)
-
+        getWeatherUseCase = mock(GetWeatherUseCase(weatherRepository))
+        getForecastUseCase = mock(GetForecastUseCase(weatherRepository))
+        getLocationDataUseCase = mock(GetLocationDataUseCase(weatherRepository))
         viewModel = LocationViewModel(
             fusedLocationProviderClient,
             application,
-            weatherRepository,
+            getWeatherUseCase,
+            getForecastUseCase,
+            getLocationDataUseCase,
             mockChecker
         )
     }

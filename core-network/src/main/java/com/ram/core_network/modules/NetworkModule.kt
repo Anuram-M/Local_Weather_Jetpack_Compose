@@ -1,6 +1,6 @@
-package com.ram.local_weather.modules
+package com.ram.core_network.modules
 
-import com.ram.local_weather.networkservices.WeatherService
+import com.ram.core_network.WeatherService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

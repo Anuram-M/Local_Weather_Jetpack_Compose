@@ -82,11 +82,8 @@ import androidx.work.WorkManager
 import coil.compose.AsyncImage
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
+import com.ram.core_domain.models.WeatherResponse
 import com.ram.local_weather.ForecastItemComposable
-import com.ram.local_weather.animations.MovingCloudsAnimation
-import com.ram.local_weather.animations.RainAnimation
-import com.ram.local_weather.animations.Snowfall
-import com.ram.local_weather.models.WeatherResponse
 import com.ram.local_weather.ui.theme.LocalWeatherTheme
 import com.ram.local_weather.ui.theme.poppinsFont
 import com.ram.local_weather.util.BackgroundSelectorUtil

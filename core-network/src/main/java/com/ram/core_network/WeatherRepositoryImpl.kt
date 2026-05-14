@@ -1,15 +1,15 @@
-package com.ram.local_weather.repository
+package com.ram.core_network
 
-import android.util.Log
-import com.ram.local_weather.NETWORK_RESULT
-import com.ram.local_weather.models.ForeCastResponse
-import com.ram.local_weather.models.WeatherResponse
-import com.ram.local_weather.networkservices.WeatherService
-import javax.inject.Inject
+import com.ram.core_domain.NETWORK_RESULT
+import com.ram.core_domain.models.ForeCastResponse
+import com.ram.core_domain.models.WeatherResponse
+import com.ram.core_domain.repository.WeatherRepository
+import jakarta.inject.Inject
 
-class WeatherRepository @Inject constructor(private val weatherService: WeatherService) {
+class WeatherRepositoryImpl   @Inject constructor(private val weatherService: WeatherService) :
+    WeatherRepository {
 
-    suspend fun getWeatherData(lat: Double, long: Double): NETWORK_RESULT<WeatherResponse> {
+        override suspend fun getWeatherData(lat: Double, long: Double): NETWORK_RESULT<WeatherResponse> {
         val result = weatherService.getWeatherData(lat, long)
         return if (result.isSuccessful) {
             NETWORK_RESULT.Success(result.body())
@@ -18,7 +18,7 @@ class WeatherRepository @Inject constructor(private val weatherService: WeatherS
         }
     }
 
-    suspend fun getForeCaseData(lat: Double, long: Double): NETWORK_RESULT<ForeCastResponse> {
+    override suspend fun getForeCaseData(lat: Double, long: Double): NETWORK_RESULT<ForeCastResponse> {
         val result = weatherService.getForeCastData(lat, long)
         return if (result.isSuccessful) {
             NETWORK_RESULT.Success(result.body())
@@ -27,7 +27,7 @@ class WeatherRepository @Inject constructor(private val weatherService: WeatherS
         }
     }
 
-    suspend fun getWeatherDataFromLocation(location: String): NETWORK_RESULT<WeatherResponse> {
+    override suspend fun getWeatherDataFromLocation(location: String): NETWORK_RESULT<WeatherResponse> {
         val result = weatherService.getWeatherDataFromLocation(location)
         return if (result.isSuccessful) {
             NETWORK_RESULT.Success(result.body())
@@ -35,5 +35,6 @@ class WeatherRepository @Inject constructor(private val weatherService: WeatherS
             NETWORK_RESULT.Error(null, result.message())
         }
     }
+
 
 }

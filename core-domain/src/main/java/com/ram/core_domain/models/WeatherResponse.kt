@@ -1,4 +1,4 @@
-package com.ram.local_weather.models
+package com.ram.core_domain.models
 
 data class WeatherResponse(
     val coord: Coord,

@@ -1,7 +1,7 @@
-package com.ram.local_weather.networkservices
+package com.ram.core_network
 
-import com.ram.local_weather.models.ForeCastResponse
-import com.ram.local_weather.models.WeatherResponse
+import com.ram.core_domain.models.ForeCastResponse
+import com.ram.core_domain.models.WeatherResponse
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -11,7 +11,7 @@ interface WeatherService {
     suspend fun getWeatherData(
         @Query("lat") lat: Double,
         @Query("lon") long: Double,
-        @Query("appid") appKey: String = "api_key" ,
+        @Query("appid") appKey: String = "api_key",
         @Query("units") units: String = "metric"
     ) : Response<WeatherResponse>
 

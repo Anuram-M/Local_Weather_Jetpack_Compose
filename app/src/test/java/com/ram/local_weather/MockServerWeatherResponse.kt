@@ -1,6 +1,6 @@
 package com.ram.local_weather
 
-import com.ram.local_weather.networkservices.WeatherService
+import com.ram.core_network.WeatherService
 import com.ram.local_weather.util.JsonHelper
 import kotlinx.coroutines.test.runTest
 import okhttp3.mockwebserver.MockResponse
@@ -9,7 +9,6 @@ import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.mockito.ArgumentMatchers
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -24,7 +23,8 @@ class MockServerWeatherResponse {
     @Before
     fun setUp() {
       mockWebServer = MockWebServer()
-      retrofit = Retrofit.Builder().baseUrl(mockWebServer.url("/")).addConverterFactory(GsonConverterFactory.create()).build()
+      retrofit = Retrofit.Builder().baseUrl(mockWebServer.url("/")).addConverterFactory(
+          GsonConverterFactory.create()).build()
       weatherService = retrofit.create(WeatherService::class.java)
     }
 
