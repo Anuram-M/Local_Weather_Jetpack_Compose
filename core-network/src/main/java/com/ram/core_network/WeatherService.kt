@@ -10,7 +10,7 @@ interface WeatherService {
     @GET("data/2.5/weather")
     suspend fun getWeatherData(
         @Query("lat") lat: Double,
-        @Query("lon") long: Double,
+        @Query("lon") lon: Double,
         @Query("appid") appKey: String = "api_key",
         @Query("units") units: String = "metric"
     ) : Response<WeatherResponse>
@@ -18,7 +18,7 @@ interface WeatherService {
     @GET("data/2.5/forecast")
     suspend fun getForeCastData(
         @Query("lat") lat: Double,
-        @Query("lon") long: Double,
+        @Query("lon") lon: Double,
         @Query("appid") appid: String = "api_key",
         @Query("units") units : String = "metric"
     ): Response<ForeCastResponse>

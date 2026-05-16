@@ -15,8 +15,8 @@ import org.junit.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 import org.mockito.junit.MockitoJUnit
-import javax.inject.Inject
 import retrofit2.Response
+import javax.inject.Inject
 
 @HiltAndroidTest
 class WeatherRepositoryATest {

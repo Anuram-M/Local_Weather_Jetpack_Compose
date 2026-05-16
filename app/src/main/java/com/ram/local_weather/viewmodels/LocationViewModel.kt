@@ -31,6 +31,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Locale
 import javax.inject.Inject
 
@@ -82,13 +83,16 @@ class LocationViewModel @Inject constructor(
         checkAppState()
     }
 
-    fun checkAppState() : UILOGIC_STATE{
+    fun checkAppState(): UILOGIC_STATE {
         when {
-           !checkerUtil.checkLocationPermission(application) -> _uiState.value = UILOGIC_STATE.LOGIC_PERMISSION_NEEDED
+            !checkerUtil.checkLocationPermission(application) -> _uiState.value =
+                UILOGIC_STATE.LOGIC_PERMISSION_NEEDED
+
             !checkerUtil.checkLocationEnabled(application) -> {
-                 stopLocationUpdate()
+                stopLocationUpdate()
                 _uiState.value = UILOGIC_STATE.LOGIC_LOCATION_NEEDED
             }
+
             else -> _uiState.value = UILOGIC_STATE.LOGIC_APP_READY
         }
         return _uiState.value
@@ -97,7 +101,7 @@ class LocationViewModel @Inject constructor(
     @SuppressLint("MissingPermission")
     fun getLocationUpdates() {
 
-        if(!_permissionGranted.value) {
+        if (!_permissionGranted.value) {
             Log.d("OPOPOP", "getLocationUpdates: return")
             return
         }
@@ -115,9 +119,7 @@ class LocationViewModel @Inject constructor(
                 super.onLocationResult(result)
                 result.lastLocation?.let {
                     _location.value = it
-                    Log.d("REMREM", "onLocationResult: before checking")
-                    if(canExecuteFunction()) {
-                        Log.d("REMREM", "onLocationResult: after checking")
+                    if (canExecuteFunction()) {
                         getPlaceName(application.applicationContext, it)
                     }
                     _isLoading.value = false
@@ -133,19 +135,19 @@ class LocationViewModel @Inject constructor(
     }
 
     @SuppressLint("MissingPermission")
-    fun updatePermission(isGranted: Boolean) : Boolean {
+    fun updatePermission(isGranted: Boolean): Boolean {
         _permissionGranted.value = isGranted
         return _permissionGranted.value
     }
 
     fun stopLocationUpdate() {
-        if(::locationCallback.isInitialized) {
+        if (::locationCallback.isInitialized) {
             fusedLocationProviderClient.removeLocationUpdates(locationCallback)
         }
     }
 
     fun updateAddress(currentAddress: Address?) {
-        if(currentAddress != null) {
+        if (currentAddress != null) {
             _address.value = currentAddress
         }
     }
@@ -154,19 +156,31 @@ class LocationViewModel @Inject constructor(
     fun getPlaceName(context: Context, location: Location) {
         try {
             val geocoder = Geocoder(context, Locale.getDefault())
-            geocoder.getFromLocation(location.latitude, location.longitude, 1
+            geocoder.getFromLocation(
+                location.latitude, location.longitude, 1
             ) { addresses ->
                 if (addresses.isNotEmpty()) {
                     val address = addresses[0]
                     updateAddress(address)
                     viewModelScope.launch(Dispatchers.IO) {
-                        val weatherResponse = getWeatherUseCase(address.latitude, address.longitude)
-                        val foreCastResponse =
-                            getForecastUseCase(address.latitude, address.longitude)
-                        delay(200)
-                        _weatherData.value = weatherResponse.data
-                        _forecastData.value = foreCastResponse.data
-                        _refreshCount.value = _refreshCount.value + 1
+                        getWeatherUseCase(
+                            address.latitude,
+                            address.longitude
+                        ).collect { currentWeather ->
+                            withContext(Dispatchers.Main) {
+                                _weatherData.value = currentWeather.data
+                            }
+                        }
+                        getForecastUseCase(
+                            address.latitude,
+                            address.longitude
+                        ).collect { forecastWeather ->
+                            withContext(Dispatchers.Main) {
+                                delay(200)
+                                _forecastData.value = forecastWeather.data
+                                _refreshCount.value = _refreshCount.value + 1
+                            }
+                        }
                     }
                 }
             }
@@ -175,20 +189,20 @@ class LocationViewModel @Inject constructor(
         }
     }
 
-    fun canExecuteFunction() : Boolean {
+    fun canExecuteFunction(): Boolean {
         val currentTime = System.currentTimeMillis()
 
-        if(lastExecutedTime == null) {
+        if (lastExecutedTime == null) {
             lastExecutedTime = currentTime
             return true
         }
 
         val diff = currentTime - lastExecutedTime!!
-        if(diff > 30000) {
+        if (diff > 30000) {
             lastExecutedTime = currentTime
             return true
         } else {
-            return  false
+            return false
         }
     }
 
@@ -196,11 +210,11 @@ class LocationViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             stopLocationUpdate()
             weatherData.value = null
-            Log.d("RESTP", "getWeatherDataWithLocation: calling the data")
-            val result = getLocationDataUseCase(location)
-            Log.d("RESTP", "getWeatherDataWithLocation: result of the data : $result")
-            _searchWeatherData.value = result.data
-
+            getLocationDataUseCase(location).collect { queryLocationWeather ->
+                withContext(Dispatchers.Main) {
+                    _searchWeatherData.value = queryLocationWeather.data
+                }
+            }
         }
     }
 

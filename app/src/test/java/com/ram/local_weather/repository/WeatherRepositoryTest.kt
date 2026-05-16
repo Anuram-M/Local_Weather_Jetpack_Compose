@@ -1,7 +1,13 @@
 package com.ram.local_weather.repository
 
 import com.ram.core_domain.NETWORK_RESULT
-import com.ram.core_domain.models.*
+import com.ram.core_domain.models.Clouds
+import com.ram.core_domain.models.Coord
+import com.ram.core_domain.models.Main
+import com.ram.core_domain.models.Sys
+import com.ram.core_domain.models.Weather
+import com.ram.core_domain.models.WeatherResponse
+import com.ram.core_domain.models.Wind
 import com.ram.core_network.WeatherRepositoryImpl
 import com.ram.core_network.WeatherService
 import kotlinx.coroutines.test.runTest

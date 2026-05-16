@@ -7,7 +7,7 @@ import com.ram.core_domain.models.WeatherResponse
 interface WeatherRepository{
     suspend fun getWeatherData( lat: Double,  lon: Double)  : NETWORK_RESULT<WeatherResponse>
 
-    suspend fun getForeCaseData(lat: Double, long: Double): NETWORK_RESULT<ForeCastResponse>
+    suspend fun getForeCaseData(lat: Double, lon: Double): NETWORK_RESULT<ForeCastResponse>
 
     suspend fun getWeatherDataFromLocation(location: String): NETWORK_RESULT<WeatherResponse>
 }

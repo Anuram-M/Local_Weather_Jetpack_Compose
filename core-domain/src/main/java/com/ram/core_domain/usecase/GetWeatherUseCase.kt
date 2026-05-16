@@ -1,12 +1,23 @@
 package com.ram.core_domain.usecase
 
 import com.ram.core_domain.NETWORK_RESULT
-import com.ram.core_domain.models.WeatherResponse
 import com.ram.core_domain.repository.WeatherRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
 class GetWeatherUseCase @Inject constructor(val weatherRepository: WeatherRepository) {
-    suspend operator fun invoke(lat: Double, lon: Double) : NETWORK_RESULT<WeatherResponse> {
-       return weatherRepository.getWeatherData(lat, lon)
-    }
+    operator fun invoke(lat: Double, lon: Double)  = flow {
+        emit(weatherRepository.getWeatherData(lat, lon))
+    }.flowOn(Dispatchers.IO)
+        .catch { exception ->
+            emit(
+                NETWORK_RESULT.Error(
+                    data = null,
+                    exception.message ?: "Exception occurred in fetching current location data"
+                )
+            )
+        }
 }

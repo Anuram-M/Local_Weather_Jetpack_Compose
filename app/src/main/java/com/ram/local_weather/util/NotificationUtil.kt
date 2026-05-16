@@ -41,14 +41,7 @@ class NotificationUtil {
         windSpeed: Double,
         locationName: String
     ) {
-//        val channelId =
-//            "weather_channel_id" createNotificationChannel (context, channelId)
-//        val iconRes = when {
-//            condition.contains("rain",ignoreCase = true) -> R.drawable.ic_rain
-//            condition . contains ("cloud", ignoreCase = true) -> R.drawable.ic_cloud
-//            condition . contains ("clear", ignoreCase = true) -> R.drawable.ic_sunny
-//            else -> R.drawable.ic_weather
-//        }
+
         val largeIcon = BitmapFactory.decodeResource(context.resources, R.drawable.ic_launcher_foreground)
         val notification =
             NotificationCompat.Builder(context, "channel_id").setSmallIcon(R.drawable.ic_launcher_foreground)

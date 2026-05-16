@@ -6,11 +6,14 @@ import com.ram.core_domain.models.WeatherResponse
 import com.ram.core_domain.repository.WeatherRepository
 import jakarta.inject.Inject
 
-class WeatherRepositoryImpl   @Inject constructor(private val weatherService: WeatherService) :
+class WeatherRepositoryImpl @Inject constructor(private val weatherService: WeatherService) :
     WeatherRepository {
 
-        override suspend fun getWeatherData(lat: Double, long: Double): NETWORK_RESULT<WeatherResponse> {
-        val result = weatherService.getWeatherData(lat, long)
+    override suspend fun getWeatherData(
+        lat: Double,
+        lon: Double
+    ): NETWORK_RESULT<WeatherResponse> {
+        val result = weatherService.getWeatherData(lat, lon)
         return if (result.isSuccessful) {
             NETWORK_RESULT.Success(result.body())
         } else {
@@ -18,8 +21,11 @@ class WeatherRepositoryImpl   @Inject constructor(private val weatherService: We
         }
     }
 
-    override suspend fun getForeCaseData(lat: Double, long: Double): NETWORK_RESULT<ForeCastResponse> {
-        val result = weatherService.getForeCastData(lat, long)
+    override suspend fun getForeCaseData(
+        lat: Double,
+        lon: Double
+    ): NETWORK_RESULT<ForeCastResponse> {
+        val result = weatherService.getForeCastData(lat, lon)
         return if (result.isSuccessful) {
             NETWORK_RESULT.Success(result.body())
         } else {
