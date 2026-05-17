@@ -30,6 +30,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -45,6 +46,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
@@ -55,7 +57,11 @@ import com.ram.local_weather.ui.theme.poppinsFont
 import com.ram.local_weather.viewmodels.LocationViewModel
 
 @Composable
-fun LocationToggleComposable(context: Context, locationViewModel: LocationViewModel) {
+fun LocationToggleComposable(
+    context: Context,
+    locationViewModel: LocationViewModel,
+    navController: NavHostController
+) {
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartIntentSenderForResult()
@@ -90,41 +96,49 @@ fun LocationToggleComposable(context: Context, locationViewModel: LocationViewMo
             )
             rippleEffect()
         }
-        Box(
+        Column(
+            verticalArrangement = Arrangement.Bottom,
+            horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxSize()
-                .systemBarsPadding(),
-            contentAlignment = Alignment.BottomCenter
+                .systemBarsPadding()
+                .padding(bottom = 20.dp, start = 10.dp, end = 10.dp)
         ) {
-            Column(
-                verticalArrangement = Arrangement.Bottom,
-                horizontalAlignment = Alignment.CenterHorizontally,
+            Text(
+                "The app requires GPS to fetch the current location data!",
+                textAlign = TextAlign.Center,
+                fontSize = 16.sp,
+                fontFamily = poppinsFont,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(10.dp),
+                color = Color.White
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            Button(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .systemBarsPadding()
-                    .padding(bottom = 20.dp, start = 10.dp, end = 10.dp)
-            ) {
-                Text(
-                    "The app requires GPS to fetch the current location data!",
-                    textAlign = TextAlign.Center,
-                    fontSize = 16.sp,
-                    fontFamily = poppinsFont,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(10.dp),
-                    color = Color.White
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-                Button(
-                    modifier = Modifier.fillMaxWidth().padding(5.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E88E5)),
-                    onClick = {
+                    .fillMaxWidth()
+                    .padding(5.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E88E5)),
+                onClick = {
                     showLocationToggle(context, locationViewModel, launcher)
                 }) {
-                    Text("Turn on Location", modifier = Modifier.padding(3.dp), fontSize = 16.sp, color = Color.White, fontFamily = poppinsFont)
-                }
+                Text("Turn on", modifier = Modifier.padding(3.dp), fontSize = 16.sp, color = Color.White, fontFamily = poppinsFont)
             }
-
-
+            TextButton(
+                onClick = {
+                    navController.navigate("weather") {
+                        popUpTo(0)
+                    }
+                },
+            ) {
+                Text(
+                    text = "Skip for now",
+                    modifier = Modifier.padding(3.dp),
+                    fontSize = 16.sp,
+                    color = Color.White,
+                    fontFamily = poppinsFont
+                )
+            }
         }
 
     }

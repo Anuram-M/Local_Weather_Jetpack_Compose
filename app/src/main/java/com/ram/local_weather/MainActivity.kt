@@ -14,6 +14,8 @@ import androidx.annotation.RequiresApi
 import com.ram.local_weather.screens.WeatherHomeScreen
 import com.ram.local_weather.ui.theme.LocalWeatherTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlin.math.abs
+import kotlin.math.pow
 
  @AndroidEntryPoint
 class MainActivity : ComponentActivity() {

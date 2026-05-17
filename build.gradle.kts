@@ -9,4 +9,5 @@ plugins {
     alias(libs.plugins.google.gms.google.services) apply false
     alias(libs.plugins.google.firebase.crashlytics) apply false
     alias(libs.plugins.android.library) apply false // Check latest version
+    id("com.google.devtools.ksp") version "2.0.21-1.0.26" apply false
 }

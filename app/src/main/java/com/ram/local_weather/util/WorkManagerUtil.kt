@@ -25,7 +25,8 @@ class WorkManagerUtil @AssistedInject constructor(
         if (location == null) {
             return Result.retry()
         }
-        if (SharedPrefUtil().isFirstTime(context)) {
+
+        if (SharedPrefUtil.getBoolean(PREF_KEYS.ALREADY_SHOWN.name)) {
             return Result.success()
         }
 

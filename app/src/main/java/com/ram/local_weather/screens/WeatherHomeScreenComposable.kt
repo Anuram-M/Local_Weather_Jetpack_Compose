@@ -28,8 +28,8 @@ fun WeatherHomeScreen(locationViewModel : LocationViewModel = hiltViewModel()) {
     ) {
         composable("loading") { LoadingScreen() }
         composable("permission") { PermissionScreenComposable(locationViewModel) }
-        composable("location") { LocationToggleComposable(context, locationViewModel) }
-        composable("weather") { WeatherDataScreenComposable(locationViewModel) }
+        composable("location") { LocationToggleComposable(context, locationViewModel, navController) }
+        composable("weather") { WeatherHomeComposable(locationViewModel) }
     }
 
     LaunchedEffect(state) {

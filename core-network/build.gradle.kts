@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
@@ -5,6 +8,12 @@ plugins {
     id("com.google.dagger.hilt.android")
 }
 
+val localProperties = Properties().apply {
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        load(FileInputStream(localPropertiesFile))
+    }
+}
 android {
     namespace = "com.ram.core_network"
     compileSdk = 36
@@ -14,6 +23,10 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+
+        val weatherKey = localProperties.getProperty("WEATHER_API_KEY") ?: "\"dfdfdf\""
+
+        buildConfigField("String", "WEATHER_API_KEY", weatherKey)
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -21,6 +34,9 @@ android {
     }
     kotlinOptions {
         jvmTarget = "11"
+    }
+    buildFeatures {
+        buildConfig = true
     }
 
 }

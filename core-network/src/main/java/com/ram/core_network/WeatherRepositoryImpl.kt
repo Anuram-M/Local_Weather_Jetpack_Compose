@@ -1,5 +1,6 @@
 package com.ram.core_network
 
+import android.util.Log
 import com.ram.core_domain.NETWORK_RESULT
 import com.ram.core_domain.models.ForeCastResponse
 import com.ram.core_domain.models.WeatherResponse
@@ -14,6 +15,7 @@ class WeatherRepositoryImpl @Inject constructor(private val weatherService: Weat
         lon: Double
     ): NETWORK_RESULT<WeatherResponse> {
         val result = weatherService.getWeatherData(lat, lon)
+        Log.d("WAPI", "getWeatherData: ${result}")
         return if (result.isSuccessful) {
             NETWORK_RESULT.Success(result.body())
         } else {

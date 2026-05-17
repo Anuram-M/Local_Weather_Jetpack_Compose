@@ -11,7 +11,7 @@ interface WeatherService {
     suspend fun getWeatherData(
         @Query("lat") lat: Double,
         @Query("lon") lon: Double,
-        @Query("appid") appKey: String = "api_key",
+        @Query("appid") appKey: String = BuildConfig.WEATHER_API_KEY,
         @Query("units") units: String = "metric"
     ) : Response<WeatherResponse>
 
@@ -19,14 +19,14 @@ interface WeatherService {
     suspend fun getForeCastData(
         @Query("lat") lat: Double,
         @Query("lon") lon: Double,
-        @Query("appid") appid: String = "api_key",
+        @Query("appid") appid: String = BuildConfig.WEATHER_API_KEY,
         @Query("units") units : String = "metric"
     ): Response<ForeCastResponse>
 
     @GET("data/2.5/weather")
     suspend fun getWeatherDataFromLocation(
         @Query("q") query: String,
-        @Query("appid") appKey: String = "api_key" ,
+        @Query("appid") appKey: String = BuildConfig.WEATHER_API_KEY ,
         @Query("units") units: String = "metric"
     ) : Response<WeatherResponse>
 }

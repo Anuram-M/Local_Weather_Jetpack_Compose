@@ -32,7 +32,7 @@ import com.ram.local_weather.ui.theme.poppinsFont
 import kotlin.math.round
 
 @Composable
-fun SearchWeatherDataScreen(weatherData: WeatherResponse?) {
+fun QueryLocationWeatherComposable(weatherData: WeatherResponse?) {
     Box(
         modifier = Modifier
             .fillMaxSize()
