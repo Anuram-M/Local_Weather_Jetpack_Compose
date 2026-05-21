@@ -15,7 +15,6 @@ class WeatherRepositoryImpl @Inject constructor(private val weatherService: Weat
         lon: Double
     ): NETWORK_RESULT<WeatherResponse> {
         val result = weatherService.getWeatherData(lat, lon)
-        Log.d("WAPI", "getWeatherData: ${result}")
         return if (result.isSuccessful) {
             NETWORK_RESULT.Success(result.body())
         } else {

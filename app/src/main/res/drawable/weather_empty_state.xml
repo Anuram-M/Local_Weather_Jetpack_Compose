@@ -206,12 +206,13 @@
   <group>
     <clip-path
         android:pathData="M36 0H364A36 36 0 0 1 400 36V364A36 36 0 0 1 364 400H36A36 36 0 0 1 0 364V36A36 36 0 0 1 36 0Z" />
+<!--  sky color  -->
     <path
         android:pathData="M0 0H400V400H0V0Z"
-        android:fillColor="#BFD4E8" />
-    <path
-        android:pathData="M0 290H400V400H0V290Z"
-        android:fillColor="#D8E8F3" />
+        android:fillColor="#080f0f" />
+<!--    <path-->
+<!--        android:pathData="M0 290H400V400H0V290Z"-->
+<!--        android:fillColor="#D8E8F3" />-->
     <path
         android:pathData="M0 310H400V400H0V310Z"
         android:fillColor="#E4EFF7" />
@@ -365,7 +366,7 @@
 <!--        android:fillColor="#7A9BB5" />-->
     <path
         android:pathData="M36 0H364A36 36 0 0 1 400 36V364A36 36 0 0 1 364 400H36A36 36 0 0 1 0 364V36A36 36 0 0 1 36 0Z"
-        android:strokeColor="#A8C4D8"
+        android:strokeColor="#CCC2DC"
         android:strokeWidth="2" />
   </group>
 </vector>

@@ -1,5 +1,6 @@
 package com.ram.local_weather.screens
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -30,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -41,7 +43,7 @@ fun NewSearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
     expanded: Boolean,
-    onExpandMChange: () -> Unit,
+    onExpandChange: () -> Unit,
     locationViewModel: LocationViewModel,
     isSearchWeather: Boolean,
     onSearch: () -> Unit,
@@ -49,15 +51,16 @@ fun NewSearchBar(
     searchList: List<String>,
     poppinsFont: FontFamily
 ) {
-    var expanded by remember { mutableStateOf(false) }
+//    var expanded by remember { mutableStateOf(false) }
 
+    Log.d("SEARCH", "NewSearchBar: ${searchList}")
     SearchBar(
         colors = SearchBarDefaults.colors(
             containerColor = Color(0xFFE0E0E0),
             dividerColor = Color.Black,
         ),
         expanded = expanded,
-        onExpandedChange = { expanded = it },
+        onExpandedChange = { onExpandChange() },
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(max = 350.dp)
@@ -73,11 +76,11 @@ fun NewSearchBar(
                 query = query,
                 onQueryChange = { onQueryChange(it) },
                 onSearch = {
-                    expanded = false
+                    onExpandChange()
                     locationViewModel.getWeatherDataWithLocation(query.trim())
                 },
                 expanded = expanded,
-                onExpandedChange = { expanded = it },
+                onExpandedChange = { onExpandChange() },
                 placeholder = {
                     Text(
                         "Search weather by location...",
@@ -123,8 +126,9 @@ fun NewSearchBar(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
+//                        .background(Color(0xFFDFDFDF))
                         .background(Color(0xFFDFDFDF))
-                        .heightIn(max = 300.dp)
+//                        .heightIn(max = 300.dp)
                         .padding(5.dp)
                 ) {
                     items(filteredList) { item ->
@@ -134,14 +138,13 @@ fun NewSearchBar(
                                 .clickable {
                                     onQueryChange(item)
                                     locationViewModel.getWeatherDataWithLocation(item)
-                                    expanded = false
-                                    onSearch
+                                    onExpandChange()
                                 }
                                 .padding(10.dp)
                         ) {
                             Icon(Icons.Default.Search, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(item, fontFamily = poppinsFont)
+                            Text(item, fontFamily = poppinsFont, style = TextStyle(color = Color.Black))
                         }
                     }
                 }
@@ -152,7 +155,7 @@ fun NewSearchBar(
                     .fillMaxHeight()
                     .fillMaxWidth(), contentAlignment = Alignment.Center
             ) {
-                Text("No Suggestions available!!")
+                Text("No Suggestions available!!", fontFamily = poppinsFont, style = TextStyle(color = Color.Black))
             }
 
         }

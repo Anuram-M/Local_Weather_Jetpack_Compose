@@ -1,16 +1,25 @@
 package com.ram.local_weather.screens
 
+import android.Manifest
+import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.IntentSender
 import android.location.LocationManager
 import android.os.Build
 import android.util.Log
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,16 +31,23 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
@@ -50,6 +66,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -60,14 +78,19 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import coil.compose.AsyncImage
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationSettingsRequest
+import com.google.android.gms.location.Priority
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import com.ram.core_database.dto.MappedWeather
 import com.ram.local_weather.ForecastItemComposable
+import com.ram.local_weather.R
 import com.ram.local_weather.ui.theme.poppinsFont
 import com.ram.local_weather.util.BackgroundSelectorUtil
 import com.ram.local_weather.util.CheckerUtil
-import com.ram.local_weather.util.WorkManagerUtil
 import com.ram.local_weather.viewmodels.LocationViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -88,30 +111,34 @@ fun WeatherHomeComposable(
 
     val coroutineScope = rememberCoroutineScope()
 
-    var isLoading by remember {
-        mutableStateOf(false)
+    val searchDefaultList by locationViewModel.searchLocations.collectAsStateWithLifecycle()
+    val toggleLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartIntentSenderForResult()
+    ) {  result ->
+        run {
+            if (result.resultCode == Activity.RESULT_OK) {
+                locationViewModel.getLocationUpdates()
+            }
+        }
     }
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissios ->
+        when{
+            permissios.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) ||
+                    permissios.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
+                locationViewModel.updatePermission(true)
 
-    var searchDefaultList by remember {
-        mutableStateOf(listOf(""))
-    }
-    LaunchedEffect(Unit) {
-        while (true) {
-            firebaseDatabase.collection("location").get().addOnSuccessListener { result ->
-                Log.d("RESTP", "WeatherDataScreenComposable: $result")
-                for (item in result) {
-                    searchDefaultList = item["city list"] as List<String>
-                    Log.d("RESTP", "WeatherDataScreenComposable: ${item["city list"]}")
-                }
-            }.addOnFailureListener {
+                showLocationToggleH(context, locationViewModel, toggleLauncher)
+            }
+            else -> {
 
             }
-            delay(60000)
         }
     }
 
     LaunchedEffect(Unit) {
-        isLoading = true
+//        loading = true
         locationViewModel.getLocationUpdates()
     }
 
@@ -125,7 +152,7 @@ fun WeatherHomeComposable(
 
 
     val weatherData by locationViewModel.mappedWeather.collectAsStateWithLifecycle()
-    val savedweatherData by locationViewModel.savedWeather.collectAsStateWithLifecycle()
+    val isLoading by locationViewModel.isLoading.collectAsStateWithLifecycle()
     val forecastData by locationViewModel.forecastData
     var searchWeatherData by locationViewModel.searchWeather
     val refreshCount by locationViewModel.refreshCount
@@ -154,18 +181,20 @@ fun WeatherHomeComposable(
         mutableStateOf("")
     }
 
-    var searchList by remember {
-        mutableStateOf(listOf(""))
+    var pingIcon by remember {
+        mutableStateOf(R.drawable.location_off)
     }
     DisposableEffect(Unit) {
-
+        pingIcon = if(CheckerUtil().checkLocationEnabled(context!!)) R.drawable.on_location else R.drawable.location_off
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 if (intent?.action == LocationManager.PROVIDERS_CHANGED_ACTION) {
                     val isEnabled = CheckerUtil().checkLocationEnabled(context!!)
                     if (isEnabled != lastKnownState) {
                         lastKnownState = isEnabled
-                        locationViewModel.checkAppState()
+                        locationViewModel.stopLocationUpdate()
+//                        locationViewModel.checkAppState()
+                        pingIcon = if(isEnabled) R.drawable.on_location else R.drawable.location_off
                     }
                 }
             }
@@ -181,7 +210,7 @@ fun WeatherHomeComposable(
     LaunchedEffect(weatherData) {
         if (weatherData != null) {
 //            animationWidget = weatherData?.weather!![0].main
-            isLoading = false
+//            loading = false
             isRefreshing = false
         }
     }
@@ -208,24 +237,49 @@ fun WeatherHomeComposable(
             mainBg = BackgroundSelectorUtil().backgroundChoice(weatherData?.weatherCategory!!)
         }
     }
-    LaunchedEffect(Unit) {
-        WorkManager.getInstance(context).cancelAllWork()
-        val workRequest =
-            PeriodicWorkRequestBuilder<WorkManagerUtil>(15, TimeUnit.MINUTES).build()
-        WorkManager.getInstance(context)
-            .enqueueUniquePeriodicWork("UNiq", ExistingPeriodicWorkPolicy.KEEP, workRequest)
-    }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(animatedBackground, animatedDayAccent)
+//    LaunchedEffect(Unit) {
+//        WorkManager.getInstance(context).cancelAllWork()
+//        val workRequest =
+//            PeriodicWorkRequestBuilder<WorkManagerUtil>(15, TimeUnit.MINUTES).build()
+//        WorkManager.getInstance(context)
+//            .enqueueUniquePeriodicWork("UNiq", ExistingPeriodicWorkPolicy.KEEP, workRequest)
+//    }
+
+
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                containerColor = Color.White,
+                shape = CircleShape,
+                onClick = {
+                    if(!CheckerUtil().checkLocationPermission(context)) {
+                        launcher.launch(
+                            arrayOf(
+                                Manifest.permission.ACCESS_FINE_LOCATION,
+                                Manifest.permission.ACCESS_COARSE_LOCATION
+                            )
+                        )
+                    } else if(!CheckerUtil().checkLocationEnabled(context)) {
+                        showLocationToggleH(context, locationViewModel, toggleLauncher)
+                    }
+                }
+            ) {
+                Icon(painter = painterResource(pingIcon), contentDescription = null, tint = Color.Black, modifier = Modifier.size(30.dp))
+            }
+        }
+
+    ) { innerPadding ->
+        Box(modifier = Modifier.fillMaxSize()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        brush = Brush.linearGradient(
+                            colors = listOf(animatedBackground, animatedDayAccent)
+                        )
                     )
-                )
-        )
+            )
 
 //        if(!animationWidget.isNullOrEmpty()) {
 //            when(animationWidget.lowercase()) {
@@ -243,119 +297,143 @@ fun WeatherHomeComposable(
 //                )
 //            }
 //        }
-        var query by remember {
-            mutableStateOf("")
-        }
-        var expand by remember {
-            mutableStateOf(false)
-        }
-        Column(modifier = Modifier.systemBarsPadding()) {
-            NewSearchBar(
-                query = query,
-                onQueryChange = { query = it },
-                expanded = expand,
-                onExpandMChange = { expand = !expand },
-                locationViewModel,
-                isSearchWeather,
-                onSearch = { isSearchWeather = true },
-                onClear = {
-                    isLoading = true
-                    locationViewModel.getLocationUpdates()
-                    locationViewModel.resetSearchWeather()
-                },
-                searchDefaultList,
-                poppinsFont
-            )
-            PullToRefreshBox(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.TopCenter,
-                state = refreshState,
-                isRefreshing = isRefreshing,
-                onRefresh = {
-                    coroutineScope.launch {
-                        isRefreshing = true
+            var query by remember {
+                mutableStateOf("")
+            }
+            var expand by remember {
+                mutableStateOf(false)
+            }
+            Column(modifier = Modifier.systemBarsPadding()) {
+                NewSearchBar(
+                    query = query,
+                    onQueryChange = { query = it },
+                    expanded = expand,
+                    onExpandChange = { expand = !expand },
+                    locationViewModel,
+                    isSearchWeather,
+                    onSearch = { isSearchWeather = true },
+                    onClear = {
+                        locationViewModel.resetSearchWeather()
                         locationViewModel.getLocationUpdates()
-                        delay(1500)
-                        isRefreshing = false
-                    }
-                },
-                indicator = {
-                    PullToRefreshDefaults.Indicator(
-                        state = refreshState,
-                        isRefreshing = isRefreshing,
-                        containerColor = Color.Black,
-                        color = Color.Red
-                    )
-                }
-            ) {
 
-                when {
-                    isLoading || isRefreshing -> {
-                        ShimmerPlaceholderComposable()
+                    },
+                    searchDefaultList,
+                    poppinsFont
+                )
+                PullToRefreshBox(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.TopCenter,
+                    state = refreshState,
+                    isRefreshing = isRefreshing,
+                    onRefresh = {
+                        coroutineScope.launch {
+                            isRefreshing = true
+                            locationViewModel.getLocationUpdates()
+                            delay(1500)
+                            isRefreshing = false
+                        }
+                    },
+                    indicator = {
+                        PullToRefreshDefaults.Indicator(
+                            state = refreshState,
+                            isRefreshing = isRefreshing,
+                            containerColor = Color.Black,
+                            color = Color.Red
+                        )
                     }
+                ) {
 
-                    searchWeatherData != null -> {
-                        QueryLocationWeatherComposable(searchWeatherData!!)
-                    }
+                    when {
+                        isLoading || isRefreshing -> {
+                            ShimmerPlaceholderComposable()
+                        }
 
-                    weatherData != null -> {
-//                        Box(modifier = Modifier.fillMaxWidth().fillMaxHeight().padding(25.dp), contentAlignment = Alignment.Center) {
-//                            Image(
-//                                painter = painterResource(R.drawable.weather_empty_state),
-//                                contentDescription = null
-//                            )
-//                        }
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize(),
-                            contentAlignment = Alignment.TopCenter
-                        ) {
-                            Column(
+                        searchWeatherData != null -> {
+                            QueryLocationWeatherComposable(searchWeatherData!!)
+                        }
+
+                        weatherData != null -> {
+
+                            Box(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .fillMaxHeight()
-                                    .padding(10.dp)
-                                    .verticalScroll(rememberScrollState()),
-                                verticalArrangement = Arrangement.SpaceBetween
+                                    .fillMaxSize(),
+                                contentAlignment = Alignment.TopCenter
                             ) {
-                                Card(
+                                Column(
                                     modifier = Modifier
-                                        .padding(10.dp),
-                                    colors = CardDefaults.cardColors(
-                                        containerColor = Color(0xFFE0E0E0)
-                                    ),
-                                    elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
+                                        .fillMaxWidth()
+                                        .fillMaxHeight()
+                                        .padding(10.dp)
+                                        .verticalScroll(rememberScrollState()),
+                                    verticalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Column(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(20.dp),
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        LocalityCard(
-                                            Pair(
-                                                weatherData?.locality,
-                                                weatherData?.subLocality
-                                            ), poppinsFont
-                                        )
-                                        WeatherDataCard(weatherData!!, textColor, poppinsFont)
+                                    if(!CheckerUtil().checkLocationEnabled(context)) {
+                                        Box(
+                                            modifier = Modifier.fillMaxWidth().padding(10.dp)
+                                        ) {
+                                            Text(
+                                                text = "Not Live",
+                                                modifier = Modifier.fillMaxWidth(),
+                                                textAlign = TextAlign.Center,
+                                                style = TextStyle(
+                                                    color = Color.Red,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            )
+                                        }
                                     }
-                                }
-
-                                AnimatedVisibility(
-                                    visible = forecastData != null,
-                                ) {
-                                    LazyRow(
+                                    Card(
                                         modifier = Modifier
-                                            .padding(horizontal = 5.dp)
+                                            .padding(10.dp),
+                                        colors = CardDefaults.cardColors(
+                                            containerColor = Color(0xFFE0E0E0)
+                                        ),
+                                        elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
                                     ) {
-                                        items(forecastData?.list!!) { item ->
-                                            ForecastItemComposable(item, poppinsFont)
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(20.dp),
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            verticalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            LocalityCard(
+                                                Pair(
+                                                    weatherData?.locality,
+                                                    weatherData?.subLocality
+                                                ), poppinsFont
+                                            )
+                                            WeatherDataCard(weatherData!!, textColor, poppinsFont)
+                                        }
+                                    }
+
+                                    AnimatedVisibility(
+                                        visible = forecastData != null,
+                                    ) {
+                                        LazyRow(
+                                            modifier = Modifier
+                                                .padding(horizontal = 5.dp)
+                                        ) {
+                                            items(forecastData?.list!!) { item ->
+                                                ForecastItemComposable(item, poppinsFont)
+                                            }
                                         }
                                     }
                                 }
+                            }
+                        }
+
+                        else -> {
+                            Box(
+                                modifier = Modifier.fillMaxSize().padding(20.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textAlign = TextAlign.Center,
+                                    text = "No Weather data available, \nsearch new location"
+                                )
                             }
                         }
                     }
@@ -363,6 +441,7 @@ fun WeatherHomeComposable(
             }
         }
     }
+
 }
 
 @Composable
@@ -576,4 +655,34 @@ fun WeatherDataCard(weatherData: MappedWeather, textColor: Color, spFont: FontFa
             }
         }
     }
+}
+
+fun showLocationToggleH(
+    context: Context,
+    locationViewModel: LocationViewModel,
+    launcher: ManagedActivityResultLauncher<IntentSenderRequest, ActivityResult>
+) {
+    val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 3000L).build()
+
+    val locationBuilder =
+        LocationSettingsRequest.Builder().addLocationRequest(locationRequest).build()
+    val service = LocationServices.getSettingsClient(context)
+
+    val task = service.checkLocationSettings(locationBuilder)
+
+    task.addOnSuccessListener {
+        locationViewModel.updatePermission(true)
+        locationViewModel.checkAppState()
+    }
+    task.addOnFailureListener({ e ->
+        if (e is ResolvableApiException) {
+            try {
+                val intentSenderRequest =
+                    IntentSenderRequest.Builder(e.resolution).build()
+                launcher.launch(intentSenderRequest)
+            } catch (sendEx: IntentSender.SendIntentException) {
+                sendEx.printStackTrace()
+            }
+        }
+    })
 }

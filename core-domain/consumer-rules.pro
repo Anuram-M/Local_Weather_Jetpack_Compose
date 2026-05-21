@@ -1,0 +1,2 @@
+-keep class com.ram.core_domain.models.** { *; }
+-keepclassmembers class com.ram.core_domain.models.** { *; }
