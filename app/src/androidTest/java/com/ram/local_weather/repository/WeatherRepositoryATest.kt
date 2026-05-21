@@ -1,7 +1,8 @@
 package com.ram.local_weather.repository
 
-import com.ram.local_weather.NETWORK_RESULT
-import com.ram.local_weather.networkservices.WeatherService
+import com.ram.core_domain.NETWORK_RESULT
+import com.ram.core_network.WeatherRepositoryImpl
+import com.ram.core_network.WeatherService
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.test.runTest
@@ -29,11 +30,11 @@ class WeatherRepositoryATest {
     @Inject
     lateinit var weatherService: WeatherService
 
-    lateinit var weatherRepository: WeatherRepository
+    lateinit var weatherRepository: WeatherRepositoryImpl
     @Before
     fun setUp() {
         hiltRule.inject()
-        weatherRepository = WeatherRepository(weatherService)
+        weatherRepository = WeatherRepositoryImpl(weatherService)
     }
 
     @After

@@ -16,7 +16,7 @@ import com.ram.local_weather.viewmodels.LocationViewModel
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
-fun WeatherHomeScreen(locationViewModel : LocationViewModel = hiltViewModel()) {
+fun WeatherHomeScreen(locationViewModel: LocationViewModel = hiltViewModel()) {
 
     val state by locationViewModel.uiLogicState.collectAsState()
     val context = LocalContext.current.applicationContext
@@ -27,13 +27,19 @@ fun WeatherHomeScreen(locationViewModel : LocationViewModel = hiltViewModel()) {
         startDestination = "loading"
     ) {
         composable("loading") { LoadingScreen() }
-        composable("permission") { PermissionScreenComposable(locationViewModel) }
-        composable("location") { LocationToggleComposable(context, locationViewModel) }
-        composable("weather") { WeatherDataScreenComposable(locationViewModel) }
+        composable("permission") { PermissionScreenComposable(locationViewModel, navController) }
+        composable("location") {
+            LocationToggleComposable(
+                context,
+                locationViewModel,
+                navController
+            )
+        }
+        composable("weather") { WeatherHomeComposable(locationViewModel) }
     }
 
     LaunchedEffect(state) {
-        when(state){
+        when (state) {
             UILOGIC_STATE.LOGIC_PERMISSION_NEEDED -> {
                 locationViewModel.updatePermission(false)
                 if (navController.currentDestination?.route != "permission") {
@@ -42,6 +48,7 @@ fun WeatherHomeScreen(locationViewModel : LocationViewModel = hiltViewModel()) {
                     }
                 }
             }
+
             UILOGIC_STATE.LOGIC_LOCATION_NEEDED -> {
                 locationViewModel.updatePermission(true)
                 if (navController.currentDestination?.route != "location") {
@@ -50,6 +57,7 @@ fun WeatherHomeScreen(locationViewModel : LocationViewModel = hiltViewModel()) {
                     }
                 }
             }
+
             UILOGIC_STATE.LOGIC_APP_READY -> {
                 locationViewModel.updatePermission(true)
                 if (navController.currentDestination?.route != "weather") {
@@ -60,7 +68,7 @@ fun WeatherHomeScreen(locationViewModel : LocationViewModel = hiltViewModel()) {
             }
 
             UILOGIC_STATE.LOGIC_LOADING -> {
-                if(navController.currentDestination?.route != "loading") {
+                if (navController.currentDestination?.route != "loading") {
                     navController.navigate("loading") {
                         popUpTo(0)
                     }

@@ -11,16 +11,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
-import com.google.firebase.FirebaseApp
 import com.ram.local_weather.screens.WeatherHomeScreen
 import com.ram.local_weather.ui.theme.LocalWeatherTheme
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.ArrayList
-import java.util.Arrays
-import kotlin.collections.HashMap
-import kotlin.math.log
+import kotlin.math.abs
+import kotlin.math.pow
 
-@AndroidEntryPoint
+ @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)

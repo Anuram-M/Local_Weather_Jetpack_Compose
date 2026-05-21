@@ -1,15 +1,9 @@
 package com.ram.local_weather.screens
 
 import android.Manifest
-import android.app.AlertDialog
-import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
-import android.provider.Settings
 import android.util.Log
-import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -24,9 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -45,6 +37,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.navigation.NavHostController
 import com.ram.local_weather.R
 import com.ram.local_weather.ui.theme.poppinsFont
 import com.ram.local_weather.util.CheckerUtil
@@ -53,7 +46,10 @@ import com.ram.local_weather.viewmodels.LocationViewModel
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
-fun PermissionScreenComposable(locationViewModel: LocationViewModel) {
+fun PermissionScreenComposable(
+    locationViewModel: LocationViewModel,
+    navController: NavHostController
+) {
 
     val context = LocalContext.current.applicationContext
     var showBackgroundPermissionDialog by remember {
@@ -187,7 +183,7 @@ fun PermissionScreenComposable(locationViewModel: LocationViewModel) {
             .fillMaxSize()
             .systemBarsPadding()
             .padding(bottom = 20.dp, start = 10.dp, end = 10.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Bottom) {
-            Text(text = "This app requires location permission to work properly", textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, fontFamily = poppinsFont, fontSize = 16.sp, modifier = Modifier.padding(10.dp), color = Color.White)
+            Text(text = "This app requires location permission to fetch your location weather using GPS coordinates", textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, fontFamily = poppinsFont, fontSize = 16.sp, modifier = Modifier.padding(10.dp), color = Color.White)
             Button(
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E88E5)),
                 onClick = {
@@ -214,6 +210,21 @@ fun PermissionScreenComposable(locationViewModel: LocationViewModel) {
 //                    .padding(5.dp)) {
 //                Text("Notification Permission",  modifier = Modifier.padding(5.dp), fontSize = 16.sp, fontFamily = poppinsFont)
 //            }
+            TextButton(
+                onClick = {
+                    navController.navigate("weather") {
+                        popUpTo(0)
+                    }
+                },
+            ) {
+                Text(
+                    text = "Skip for now",
+                    modifier = Modifier.padding(3.dp),
+                    fontSize = 16.sp,
+                    color = Color.White,
+                    fontFamily = poppinsFont
+                )
+            }
 
         }
 

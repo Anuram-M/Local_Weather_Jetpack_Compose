@@ -54,11 +54,14 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
 dependencies {
-
+    implementation(project(":core-domain"))
+    implementation(project(":core-network"))
+    implementation(project(":core-database"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -85,15 +88,7 @@ dependencies {
 
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0") // Check latest version
 
-    //RETROFIT
-    implementation("com.squareup.retrofit2:retrofit:2.11.0") // Use the latest version
 
-    //GSON converter
-    implementation("com.squareup.retrofit2:converter-gson:2.11.0") // Use the latest version
-
-    //HTTP client and logging interceptor
-    implementation("com.squareup.okhttp3:okhttp:4.12.0") // Use the latest version compatible with your Retrofit
-    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0") // Optional, for logging requests/responses
     //Coil - For loading internet images in jetpack compose similar to glide
     implementation("io.coil-kt:coil-compose:2.6.0")
     //added for composable screen navigation
@@ -111,6 +106,10 @@ dependencies {
     // Coroutines test utilities (for testing suspend functions)
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
     //added for instantexecutor rule
+
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    //GSON converter
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
     //MOCK Webserver
     testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
     testImplementation("androidx.arch.core:core-testing:2.2.0")

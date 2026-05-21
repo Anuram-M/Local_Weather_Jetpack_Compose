@@ -1,16 +1,15 @@
 package com.ram.local_weather.repository
 
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.ram.local_weather.NETWORK_RESULT
-import com.ram.local_weather.models.Clouds
-import com.ram.local_weather.models.Coord
-import com.ram.local_weather.models.ForeCastResponse
-import com.ram.local_weather.models.Main
-import com.ram.local_weather.models.Sys
-import com.ram.local_weather.models.Weather
-import com.ram.local_weather.models.WeatherResponse
-import com.ram.local_weather.models.Wind
-import com.ram.local_weather.networkservices.WeatherService
+import com.ram.core_domain.NETWORK_RESULT
+import com.ram.core_domain.models.Clouds
+import com.ram.core_domain.models.Coord
+import com.ram.core_domain.models.Main
+import com.ram.core_domain.models.Sys
+import com.ram.core_domain.models.Weather
+import com.ram.core_domain.models.WeatherResponse
+import com.ram.core_domain.models.Wind
+import com.ram.core_network.WeatherRepositoryImpl
+import com.ram.core_network.WeatherService
 import kotlinx.coroutines.test.runTest
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.After
@@ -18,12 +17,10 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.ArgumentMatcher
 import org.mockito.ArgumentMatchers
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.junit.MockitoJUnit
-import org.mockito.kotlin.any
 import retrofit2.Response
 
 class WeatherRepositoryTest {
@@ -34,11 +31,11 @@ class WeatherRepositoryTest {
     @Mock
     lateinit var weatherService: WeatherService
 
-    lateinit var weatherRepository: WeatherRepository
+    lateinit var weatherRepository: WeatherRepositoryImpl
 
     @Before
     fun setUp() {
-        weatherRepository = WeatherRepository(weatherService)
+        weatherRepository = WeatherRepositoryImpl(weatherService)
     }
 
     @After

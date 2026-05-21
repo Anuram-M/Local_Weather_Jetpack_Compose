@@ -1,6 +1,5 @@
 package com.ram.local_weather.screens
 
-import android.location.Address
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -25,19 +24,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.ram.local_weather.models.WeatherResponse
-import com.ram.local_weather.ui.theme.LocalWeatherTheme
+import com.ram.core_domain.models.WeatherResponse
 import com.ram.local_weather.ui.theme.poppinsFont
-import com.ram.local_weather.ui.theme.sarpanchFont
-import kotlin.math.abs
 import kotlin.math.round
 
 @Composable
-fun SearchWeatherDataScreen(weatherData: WeatherResponse?) {
+fun QueryLocationWeatherComposable(weatherData: WeatherResponse?) {
     Box(
         modifier = Modifier
             .fillMaxSize()
