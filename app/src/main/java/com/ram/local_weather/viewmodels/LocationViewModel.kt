@@ -17,11 +17,9 @@ import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.Priority
-import com.google.firebase.firestore.FirebaseFirestore
 import com.ram.core_database.mapper.toMappedWeather
 import com.ram.core_database.dto.GPSandWeatherModel
 import com.ram.core_database.dto.MappedWeather
-import com.ram.core_database.entiry.CurrentWeather
 import com.ram.core_database.repository.CurrentWeatherRepository
 import com.ram.core_domain.NETWORK_RESULT
 import com.ram.core_domain.models.ForeCastResponse
@@ -29,6 +27,7 @@ import com.ram.core_domain.models.WeatherResponse
 import com.ram.core_domain.usecase.GetForecastUseCase
 import com.ram.core_domain.usecase.GetLocationDataUseCase
 import com.ram.core_domain.usecase.GetWeatherUseCase
+import com.ram.core_firebase.repository.FirestoreRepository
 import com.ram.local_weather.UILOGIC_STATE
 import com.ram.local_weather.util.CheckerUtil
 import com.ram.local_weather.util.PREF_KEYS
@@ -38,7 +37,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
@@ -52,7 +50,8 @@ class LocationViewModel @Inject constructor(
     private val getForecastUseCase: GetForecastUseCase,
     private val getLocationDataUseCase: GetLocationDataUseCase,
     private val checkerUtil: CheckerUtil,
-    private val currentWeatherRepository: CurrentWeatherRepository
+    private val currentWeatherRepository: CurrentWeatherRepository,
+    private val firebaserepository: FirestoreRepository
 ) : AndroidViewModel(application) {
 
     var _isLoading = MutableStateFlow(false)
@@ -100,65 +99,43 @@ class LocationViewModel @Inject constructor(
     }
 
     fun updateSearchLocations() {
-        FirebaseFirestore.getInstance().collection("location")
-            .addSnapshotListener { snapshots, exception ->
-                if (exception != null || snapshots == null) {
-                    return@addSnapshotListener
-                }
-                // Grab the very first document out of the collection dynamically
-                val firstDocument = snapshots.documents.firstOrNull()
-
-                if (firstDocument != null && firstDocument.exists()) {
-                    // Read your array field safely
-                    val cities = firstDocument.get("city list") as? List<*>
-
-                    // Update your state flow
-                    _searchLoactions.value = cities?.mapNotNull { it.toString() } ?: emptyList()
-                }
-            }
-    }
-
-    fun fetchData() {
-        viewModelScope.launch(Dispatchers.IO) {
-            currentWeatherRepository.fetchWeather().collect { weather ->
-                if (weather != null) {
-                    _mappedWeather.value = weather?.data
-                    Log.d("FETCHLOOP", "fetchData: fethced data")
-                } else {
-                    _noData.value = true
-                    _isLoading.value = false
-                    Log.d("FETCHLOOP", "fetchData: fethced no data")
-                }
+        viewModelScope.launch {
+            firebaserepository.fetchCity().collect {
+                _searchLoactions.value = it
             }
         }
     }
 
 
     fun checkAppState(): UILOGIC_STATE {
-        when {
+        viewModelScope.launch {
+            val newState = withContext(Dispatchers.IO) {
+                val locationPermissionGranted = checkerUtil.checkLocationPermission(application)
+                val locationPermissionAsked = SharedPrefUtil.getBoolean(
+                    PREF_KEYS.PERMISSION_ALREADY_ASKED.name
+                )
 
-            !checkerUtil.checkLocationPermission(application) && !SharedPrefUtil.getBoolean(
-                PREF_KEYS.PERMISSION_ALREADY_ASKED.name
-            ) -> {
-                SharedPrefUtil.saveBoolean(
+                if (!locationPermissionGranted && !locationPermissionAsked) {
+                    SharedPrefUtil.saveBoolean(
                     PREF_KEYS.PERMISSION_ALREADY_ASKED.name, true
                 )
-                _uiState.value =
-                    UILOGIC_STATE.LOGIC_PERMISSION_NEEDED
+                    return@withContext UILOGIC_STATE.LOGIC_PERMISSION_NEEDED
+                }
+
+                val gpsEnabled = checkerUtil.checkLocationEnabled(
+                    application
+                )
+                val enableGPSShown = SharedPrefUtil.getBoolean(PREF_KEYS.ALREADY_SHOWN.name)
+                if (locationPermissionGranted && !enableGPSShown && !gpsEnabled) {
+                    stopLocationUpdate()
+                    SharedPrefUtil.saveBoolean(PREF_KEYS.ALREADY_SHOWN.name, true)
+                    return@withContext UILOGIC_STATE.LOGIC_LOCATION_NEEDED
+                }
+                SharedPrefUtil.saveBoolean(PREF_KEYS.ALREADY_SHOWN.name, true)
+                UILOGIC_STATE.LOGIC_APP_READY
             }
 
-            !SharedPrefUtil.getBoolean(PREF_KEYS.ALREADY_SHOWN.name) && !checkerUtil.checkLocationEnabled(
-                application
-            ) && checkerUtil.checkLocationPermission(application) -> {
-                stopLocationUpdate()
-                SharedPrefUtil.saveBoolean(PREF_KEYS.ALREADY_SHOWN.name, true)
-                _uiState.value = UILOGIC_STATE.LOGIC_LOCATION_NEEDED
-            }
-
-            else -> {
-                SharedPrefUtil.saveBoolean(PREF_KEYS.ALREADY_SHOWN.name, true)
-                _uiState.value = UILOGIC_STATE.LOGIC_APP_READY
-            }
+            _uiState.value = newState
         }
         return _uiState.value
     }
@@ -173,7 +150,7 @@ class LocationViewModel @Inject constructor(
         if (!_permissionGranted.value) {
             return
         }
-        fetchData()
+//        fetchData()
         if (checkerUtil.checkLocationEnabled(application)) {
             updateLoading(true)
         } else {
@@ -221,76 +198,87 @@ class LocationViewModel @Inject constructor(
     fun getPlaceName(context: Context, location: Location) {
         try {
             val geocoder = Geocoder(context, Locale.getDefault())
-            geocoder.getFromLocation(
-                location.latitude, location.longitude, 1
-            ) { addresses ->
-                if (addresses.isNotEmpty()) {
-                    val address = addresses[0]
-                    viewModelScope.launch {
-                        launch {
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 
-                            getWeatherUseCase(
-                                address.latitude,
-                                address.longitude
-                            ).collect { weatherData ->
-
-                                when (weatherData) {
-                                    is NETWORK_RESULT.Success -> {
-                                        weatherData.data?.let {
-                                            val currentWeather = GPSandWeatherModel(
-                                                address = address,
-                                                weatherResponse = weatherData.data!!
-                                            )
-                                            currentWeatherRepository.insertWeather(
-                                                CurrentWeather(
-                                                    id = 0,
-                                                    isAvailable = true,
-                                                    data = currentWeather.toMappedWeather()
-                                                )
-                                            )
-                                            currentWeatherRepository.fetchWeather().first()
-                                            withContext(Dispatchers.Main) {
-
-                                                _mappedWeather.value =
-                                                    currentWeather.toMappedWeather()
-
-                                            }
-                                        }
-                                    }
-
-                                    is NETWORK_RESULT.Error -> {}
-                                    is NETWORK_RESULT.Loading -> {}
-                                }
-
-                            }
-                        }
-                        launch {
-                            getForecastUseCase(
-                                address.latitude,
-                                address.longitude
-                            ).collect { forecastWeather ->
-                                when (forecastWeather) {
-                                    is NETWORK_RESULT.Success -> {
-                                        withContext(Dispatchers.Main) {
-                                            delay(200)
-                                            _isLoading.value = false
-                                            _forecastData.value = forecastWeather.data
-                                            _refreshCount.value = _refreshCount.value + 1
-                                        }
-                                    }
-
-                                    is NETWORK_RESULT.Error<*> -> {}
-                                    is NETWORK_RESULT.Loading<*> -> {}
-                                }
-
-                            }
-                        }
-
+                geocoder.getFromLocation(
+                    location.latitude, location.longitude, 1
+                ) { addresses ->
+                    if (addresses.isNotEmpty()) {
+                        val address = addresses[0]
+                        fetchWeather(address)
                     }
+                }
+            } else {
+                val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
+                if(addresses != null && addresses.isNotEmpty()) {
+                    fetchWeather(addresses[0])
                 }
             }
         } catch (exception: Exception) {
             Log.d("LOcaTIom", "getPlaceName: $exception")
+        }
+    }
+
+    private fun fetchWeather(address: android.location.Address) {
+        viewModelScope.launch {
+            launch {
+
+                getWeatherUseCase(
+                    address.latitude,
+                    address.longitude
+                ).collect { weatherData ->
+
+                    when (weatherData) {
+                        is NETWORK_RESULT.Success -> {
+                            weatherData.data?.let {
+                                val currentWeather = GPSandWeatherModel(
+                                    address = address,
+                                    weatherResponse = weatherData.data!!
+                                )
+//                                            currentWeatherRepository.insertWeather(
+//                                                CurrentWeather(
+//                                                    id = 0,
+//                                                    isAvailable = true,
+//                                                    data = currentWeather.toMappedWeather()
+//                                                )
+//                                            )
+//                                            currentWeatherRepository.fetchWeather().first()
+                                withContext(Dispatchers.Main) {
+                                    _mappedWeather.value =
+                                        currentWeather.toMappedWeather()
+
+                                }
+                            }
+                        }
+
+                        is NETWORK_RESULT.Error -> {}
+                        is NETWORK_RESULT.Loading -> {}
+                    }
+
+                }
+            }
+            launch {
+                getForecastUseCase(
+                    address.latitude,
+                    address.longitude
+                ).collect { forecastWeather ->
+                    when (forecastWeather) {
+                        is NETWORK_RESULT.Success -> {
+                            withContext(Dispatchers.Main) {
+                                delay(200)
+                                _isLoading.value = false
+                                _forecastData.value = forecastWeather.data
+                                _refreshCount.value = _refreshCount.value + 1
+                            }
+                        }
+
+                        is NETWORK_RESULT.Error<*> -> {}
+                        is NETWORK_RESULT.Loading<*> -> {}
+                    }
+
+                }
+            }
+
         }
     }
 

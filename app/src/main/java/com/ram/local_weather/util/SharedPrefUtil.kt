@@ -7,7 +7,6 @@ import androidx.core.content.edit
 object SharedPrefUtil {
 
     val PREF_NAME = "my_pref"
-    val isFirstKey = "isFirst"
     lateinit var pref: SharedPreferences
     fun initiate(context: Context) {
         pref = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)

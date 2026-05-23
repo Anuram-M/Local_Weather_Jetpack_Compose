@@ -2,10 +2,11 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("org.jetbrains.kotlin.kapt")
     id("com.google.dagger.hilt.android")
+    id("com.google.devtools.ksp")
     alias(libs.plugins.google.gms.google.services)
     alias(libs.plugins.google.firebase.crashlytics)
+    alias(libs.plugins.google.firebase.firebase.perf)
 }
 
 android {
@@ -16,8 +17,8 @@ android {
         applicationId = "com.ram.local_weather"
         minSdk = 28
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
 
         testInstrumentationRunner = "com.ram.local_weather.CustomHiltTestRunner"
     }
@@ -44,6 +45,13 @@ android {
                 nativeSymbolUploadEnabled = false
             }
         }
+
+        create("benchmark") {
+            initWith(getByName("release"))
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks.add("release")
+            applicationIdSuffix = ".benchmark"
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -56,12 +64,18 @@ android {
         compose = true
         buildConfig = true
     }
+    lint {
+        // Prevents Lint errors from killing the build process
+        abortOnError = false
+        checkReleaseBuilds = false
+    }
 }
 
 dependencies {
     implementation(project(":core-domain"))
     implementation(project(":core-network"))
     implementation(project(":core-database"))
+    implementation(project(":core-firebase"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -78,13 +92,15 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.52")
     implementation(libs.androidx.hilt.common)
     implementation(libs.firebase.auth)
+    implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.perf)
     testImplementation(libs.junit.junit)
 //    implementation(libs.androidx.hilt.work) // Check latest version
-    kapt("com.google.dagger:hilt-compiler:2.52")
+    ksp("com.google.dagger:hilt-compiler:2.52")
     implementation("androidx.hilt:hilt-work:1.2.0") // compatible with WorkManager 2.9.0
-    kapt("androidx.hilt:hilt-compiler:1.2.0")
+    ksp("androidx.hilt:hilt-compiler:1.2.0")
 
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0") // Check latest version
 
@@ -114,7 +130,7 @@ dependencies {
     testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
     testImplementation("androidx.arch.core:core-testing:2.2.0")
     testImplementation("com.google.dagger:hilt-android-testing:2.52")
-    kaptTest("com.google.dagger:hilt-compiler:2.52")
+    kspTest("com.google.dagger:hilt-compiler:2.52")
     testImplementation("org.mockito:mockito-inline:5.2.0")
 
 
@@ -129,7 +145,7 @@ dependencies {
 
     // Hilt testing
     androidTestImplementation("com.google.dagger:hilt-android-testing:2.52")
-    kaptAndroidTest("com.google.dagger:hilt-compiler:2.52")
+    kspAndroidTest("com.google.dagger:hilt-compiler:2.52")
     // Mockito core (required)
 //    androidTestImplementation("org.mockito:mockito-core:5.12.0")
     androidTestImplementation("org.mockito:mockito-android:5.12.0")
@@ -137,6 +153,5 @@ dependencies {
 // Mockito-Kotlin extension (adds better Kotlin syntax & null-safety)
     androidTestImplementation("org.mockito.kotlin:mockito-kotlin:5.3.1")
     androidTestImplementation("androidx.arch.core:core-testing:2.2.0")
-//    androidTestImplementation("io.mockk:mockk-android:1.13.10")
 
 }

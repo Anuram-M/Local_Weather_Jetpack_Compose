@@ -33,21 +33,20 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        Log.d("RESUME", "onResume: app gets resumed")
     }
 
-    fun createNotificationChannel(context: Context) {
-        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O) {
-            val notificationChannel = NotificationChannel(
-                "channel_id",
-                "MY_NOTIFICATION_CHANNEL",
-                NotificationManager.IMPORTANCE_HIGH
-            ).apply {
-                description = "sample_description"
-                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
-            }
-            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(notificationChannel)
-        }
-    }
+//    fun createNotificationChannel(context: Context) {
+//        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O) {
+//            val notificationChannel = NotificationChannel(
+//                "channel_id",
+//                "MY_NOTIFICATION_CHANNEL",
+//                NotificationManager.IMPORTANCE_HIGH
+//            ).apply {
+//                description = "sample_description"
+//                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+//            }
+//            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+//            notificationManager.createNotificationChannel(notificationChannel)
+//        }
+//    }
 }
