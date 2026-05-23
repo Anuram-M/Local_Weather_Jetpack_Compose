@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.ram.core_database"
+    namespace = "com.ram.core_firebase"
     compileSdk = 36
 
     defaultConfig {
@@ -26,7 +26,6 @@ android {
 }
 
 dependencies {
-    implementation(project(":core-domain"))
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.ktx)
     implementation(platform(libs.firebase.bom))
@@ -37,13 +36,8 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
-
-    val room_version = "2.6.1"
-    implementation("androidx.room:room-runtime:$room_version")
-    ksp("androidx.room:room-compiler:$room_version")
-
     implementation("com.google.dagger:hilt-android:2.52")
     ksp("com.google.dagger:hilt-compiler:2.52")
 
-    implementation("com.google.code.gson:gson:2.10.1")
+
 }
