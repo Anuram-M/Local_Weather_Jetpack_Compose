@@ -37,7 +37,7 @@
 
 ## 🧭 About
 
-> **Local Weather** is an Android application built with Kotlin and Jetpack Compose that fetches local weather data through OpenWeatherMap api. It requires GPS to properly fetch your current location data(at the moment + forecast for the next 7 days), and also you can check the weather of a specific place you wish to know(weather at the moment only). On App relaunch it would check the permission and then if the GPS is enabled or not and proceed to home screen.
+> **Local Weather** is an Android application built with Kotlin and Jetpack Compose that fetches local weather data through the OpenWeatherMap api. It requires GPS to properly fetch your current location data(at the moment + forecast for the next 5 days), and also you can check the weather of a specific place you wish to know(weather at the moment only). On App relaunch, it would check the permission and then, if the GPS is enabled or not, proceed to the home screen.
 
 ---
 
