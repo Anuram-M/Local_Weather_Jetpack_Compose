@@ -23,7 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun ShimmerCard(modifier: Modifier, brush: Brush) {
+fun ShimmerCard(modifier: Modifier) {
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(
@@ -40,7 +40,7 @@ fun ShimmerCard(modifier: Modifier, brush: Brush) {
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(12.dp))
-                    .background(brush)
+                    .addShimmerEffect()
                     .width(200.dp)
                     .height(20.dp)
             )
@@ -48,7 +48,7 @@ fun ShimmerCard(modifier: Modifier, brush: Brush) {
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(12.dp))
-                    .background(brush)
+                    .addShimmerEffect()
                     .width(140.dp)
                     .height(20.dp)
             )
@@ -56,14 +56,14 @@ fun ShimmerCard(modifier: Modifier, brush: Brush) {
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(12.dp))
-                    .background(brush)
+                    .addShimmerEffect()
                     .size(100.dp)
             )
             Spacer(modifier = Modifier.height(25.dp))
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(12.dp))
-                    .background(brush)
+                    .addShimmerEffect()
                     .width(140.dp)
                     .height(20.dp)
             )
@@ -75,7 +75,7 @@ fun ShimmerCard(modifier: Modifier, brush: Brush) {
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(12.dp))
-                        .background(brush)
+                        .addShimmerEffect()
                         .width(100.dp)
                         .height(50.dp)
                 )
@@ -83,7 +83,7 @@ fun ShimmerCard(modifier: Modifier, brush: Brush) {
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(12.dp))
-                        .background(brush)
+                        .addShimmerEffect()
                         .width(100.dp)
                         .height(50.dp)
                 )

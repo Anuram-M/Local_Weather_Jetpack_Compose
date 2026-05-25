@@ -9,7 +9,6 @@ import android.content.IntentFilter
 import android.content.IntentSender
 import android.location.LocationManager
 import android.os.Build
-import android.util.Log
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
@@ -19,7 +18,6 @@ import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,8 +38,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -74,9 +70,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
 import coil.compose.AsyncImage
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationRequest
@@ -94,7 +87,6 @@ import com.ram.local_weather.util.CheckerUtil
 import com.ram.local_weather.viewmodels.LocationViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.util.concurrent.TimeUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -104,7 +96,9 @@ fun WeatherHomeComposable(
 ) {
     val context = LocalContext.current.applicationContext
 
-    val firebaseDatabase = Firebase.firestore
+    val checkerUtil by remember {
+        mutableStateOf(CheckerUtil(context))
+    }
     var isRefreshing by remember { mutableStateOf(false) }
 
     val refreshState = rememberPullToRefreshState()
@@ -117,7 +111,7 @@ fun WeatherHomeComposable(
     ) {  result ->
         run {
             if (result.resultCode == Activity.RESULT_OK) {
-                locationViewModel.getLocationUpdates()
+                locationViewModel.getLocationUpdates(context)
             }
         }
     }
@@ -139,7 +133,7 @@ fun WeatherHomeComposable(
 
     LaunchedEffect(Unit) {
 //        loading = true
-        locationViewModel.getLocationUpdates()
+        locationViewModel.getLocationUpdates(context)
     }
 
 //    LaunchedEffect(Unit) {
@@ -185,11 +179,11 @@ fun WeatherHomeComposable(
         mutableStateOf(R.drawable.location_off)
     }
     DisposableEffect(Unit) {
-        pingIcon = if(CheckerUtil().checkLocationEnabled(context!!)) R.drawable.on_location else R.drawable.location_off
+        pingIcon = if(checkerUtil.checkLocationEnabled()) R.drawable.on_location else R.drawable.location_off
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 if (intent?.action == LocationManager.PROVIDERS_CHANGED_ACTION) {
-                    val isEnabled = CheckerUtil().checkLocationEnabled(context!!)
+                    val isEnabled = checkerUtil.checkLocationEnabled()
                     if (isEnabled != lastKnownState) {
                         lastKnownState = isEnabled
                         locationViewModel.stopLocationUpdate()
@@ -253,14 +247,14 @@ fun WeatherHomeComposable(
                 containerColor = Color.White,
                 shape = CircleShape,
                 onClick = {
-                    if(!CheckerUtil().checkLocationPermission(context)) {
+                    if(!checkerUtil.checkLocationPermission()) {
                         launcher.launch(
                             arrayOf(
                                 Manifest.permission.ACCESS_FINE_LOCATION,
                                 Manifest.permission.ACCESS_COARSE_LOCATION
                             )
                         )
-                    } else if(!CheckerUtil().checkLocationEnabled(context)) {
+                    } else if(!checkerUtil.checkLocationEnabled()) {
                         showLocationToggleH(context, locationViewModel, toggleLauncher)
                     }
                 }
@@ -314,7 +308,7 @@ fun WeatherHomeComposable(
                     onSearch = { isSearchWeather = true },
                     onClear = {
                         locationViewModel.resetSearchWeather()
-                        locationViewModel.getLocationUpdates()
+                        locationViewModel.getLocationUpdates(context)
 
                     },
                     searchDefaultList,
@@ -329,7 +323,7 @@ fun WeatherHomeComposable(
                     onRefresh = {
                         coroutineScope.launch {
                             isRefreshing = true
-                            locationViewModel.getLocationUpdates()
+                            locationViewModel.getLocationUpdates(context)
                             delay(1500)
                             isRefreshing = false
                         }
@@ -368,20 +362,17 @@ fun WeatherHomeComposable(
                                         .verticalScroll(rememberScrollState()),
                                     verticalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    if(!CheckerUtil().checkLocationEnabled(context)) {
-                                        Box(
-                                            modifier = Modifier.fillMaxWidth().padding(10.dp)
-                                        ) {
-                                            Text(
-                                                text = "Not Live",
-                                                modifier = Modifier.fillMaxWidth(),
-                                                textAlign = TextAlign.Center,
-                                                style = TextStyle(
-                                                    color = Color.Red,
-                                                    fontWeight = FontWeight.Bold
-                                                )
+                                    if(!checkerUtil.checkLocationEnabled()) {
+                                        Text(
+                                            text = "Not Live",
+                                            modifier = Modifier.fillMaxWidth(),
+                                            textAlign = TextAlign.Center,
+                                            style = TextStyle(
+                                                fontSize = 18.sp,
+                                                color = Color.Black,
+                                                fontWeight = FontWeight.Bold
                                             )
-                                        }
+                                        )
                                     }
                                     Card(
                                         modifier = Modifier
@@ -415,7 +406,7 @@ fun WeatherHomeComposable(
                                             modifier = Modifier
                                                 .padding(horizontal = 5.dp)
                                         ) {
-                                            items(forecastData?.list!!) { item ->
+                                            items(forecastData!!) { item ->
                                                 ForecastItemComposable(item, poppinsFont)
                                             }
                                         }
