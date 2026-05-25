@@ -7,22 +7,23 @@ import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Build
 import androidx.core.content.ContextCompat
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
-open class CheckerUtil @Inject constructor() {
+open class CheckerUtil @Inject constructor(@param:ApplicationContext private val context: Context) {
 
-    open fun checkLocationPermission(context: Context) : Boolean {
+    open fun checkLocationPermission() : Boolean {
         return ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
     }
 
-    open fun checkLocationEnabled(context: Context) : Boolean {
+    open fun checkLocationEnabled() : Boolean {
         val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
                 locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
 
     @SuppressLint("MissingPermission", "InlinedApi")
-    fun checkNotificationPermission(context: Context): Boolean {
+    fun checkNotificationPermission(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ContextCompat.checkSelfPermission(
                 context,

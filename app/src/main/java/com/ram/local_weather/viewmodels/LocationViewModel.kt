@@ -1,7 +1,6 @@
 package com.ram.local_weather.viewmodels
 
 import android.annotation.SuppressLint
-import android.app.Application
 import android.content.Context
 import android.location.Geocoder
 import android.location.Location
@@ -10,7 +9,7 @@ import android.os.Looper
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
@@ -19,7 +18,12 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.Priority
 import com.ram.core_database.mapper.toMappedWeather
 import com.ram.core_database.dto.GPSandWeatherModel
+import com.ram.core_database.dto.MappedForecast
 import com.ram.core_database.dto.MappedWeather
+import com.ram.core_database.entity.CurrentForecast
+import com.ram.core_database.entity.CurrentWeather
+import com.ram.core_database.mapper.toMappedForecast
+import com.ram.core_database.repository.CurrentForecastRepository
 import com.ram.core_database.repository.CurrentWeatherRepository
 import com.ram.core_domain.NETWORK_RESULT
 import com.ram.core_domain.models.ForeCastResponse
@@ -37,6 +41,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
@@ -45,14 +50,14 @@ import javax.inject.Inject
 @HiltViewModel
 class LocationViewModel @Inject constructor(
     val fusedLocationProviderClient: FusedLocationProviderClient,
-    private val application: Application,
     private val getWeatherUseCase: GetWeatherUseCase,
     private val getForecastUseCase: GetForecastUseCase,
     private val getLocationDataUseCase: GetLocationDataUseCase,
     private val checkerUtil: CheckerUtil,
     private val currentWeatherRepository: CurrentWeatherRepository,
+    private val currentForecastRepository: CurrentForecastRepository,
     private val firebaserepository: FirestoreRepository
-) : AndroidViewModel(application) {
+) : ViewModel() {
 
     var _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
@@ -68,7 +73,7 @@ class LocationViewModel @Inject constructor(
     private var _savedWeather = MutableStateFlow<MappedWeather?>(null)
     val savedWeather = _savedWeather.asStateFlow()
 
-    private var _forecastData = mutableStateOf<ForeCastResponse?>(null)
+    private var _forecastData = mutableStateOf<List<MappedForecast>?>(null)
     val forecastData = _forecastData
 
     private var _noData = MutableStateFlow(false)
@@ -92,10 +97,33 @@ class LocationViewModel @Inject constructor(
     var searchLocations = _searchLoactions.asStateFlow()
 
     init {
+        fetchData()
         updateSearchLocations()
         lastExecutedTime = null
         stopLocationUpdate()
         checkAppState()
+    }
+
+    private fun fetchData() {
+        viewModelScope.launch {
+            launch {
+                Log.d("DATAB", "fetchData: weather")
+                val data = currentWeatherRepository.fetchWeather().firstOrNull()
+                if (data != null) {
+                    _mappedWeather.value = data.data
+                }
+            }
+            launch {
+                val data = currentForecastRepository.queryForecast().firstOrNull()
+                if (data != null) {
+
+                    Log.d("DATAB", "fetchData: ${data.data}")
+                    _forecastData.value = data.data
+                }
+            }
+
+
+        }
     }
 
     fun updateSearchLocations() {
@@ -110,7 +138,7 @@ class LocationViewModel @Inject constructor(
     fun checkAppState(): UILOGIC_STATE {
         viewModelScope.launch {
             val newState = withContext(Dispatchers.IO) {
-                val locationPermissionGranted = checkerUtil.checkLocationPermission(application)
+                val locationPermissionGranted = checkerUtil.checkLocationPermission()
                 val locationPermissionAsked = SharedPrefUtil.getBoolean(
                     PREF_KEYS.PERMISSION_ALREADY_ASKED.name
                 )
@@ -123,7 +151,7 @@ class LocationViewModel @Inject constructor(
                 }
 
                 val gpsEnabled = checkerUtil.checkLocationEnabled(
-                    application
+
                 )
                 val enableGPSShown = SharedPrefUtil.getBoolean(PREF_KEYS.ALREADY_SHOWN.name)
                 if (locationPermissionGranted && !enableGPSShown && !gpsEnabled) {
@@ -145,13 +173,13 @@ class LocationViewModel @Inject constructor(
     }
 
     @SuppressLint("MissingPermission")
-    fun getLocationUpdates() {
+    fun getLocationUpdates(context: Context) {
 
         if (!_permissionGranted.value) {
             return
         }
-//        fetchData()
-        if (checkerUtil.checkLocationEnabled(application)) {
+
+        if (checkerUtil.checkLocationEnabled()) {
             updateLoading(true)
         } else {
             return
@@ -168,7 +196,7 @@ class LocationViewModel @Inject constructor(
                 super.onLocationResult(result)
                 result.lastLocation?.let {
                     if (canExecuteFunction()) {
-                        getPlaceName(application.applicationContext, it)
+                        getPlaceName(context, it)
                     }
                     updateLoading(false)
                 }
@@ -194,7 +222,6 @@ class LocationViewModel @Inject constructor(
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     fun getPlaceName(context: Context, location: Location) {
         try {
             val geocoder = Geocoder(context, Locale.getDefault())
@@ -231,17 +258,22 @@ class LocationViewModel @Inject constructor(
                     when (weatherData) {
                         is NETWORK_RESULT.Success -> {
                             weatherData.data?.let {
+                                Log.d("DATAB", "fetchWeather: ${weatherData.data}")
                                 val currentWeather = GPSandWeatherModel(
                                     address = address,
                                     weatherResponse = weatherData.data!!
                                 )
-//                                            currentWeatherRepository.insertWeather(
-//                                                CurrentWeather(
-//                                                    id = 0,
-//                                                    isAvailable = true,
-//                                                    data = currentWeather.toMappedWeather()
-//                                                )
-//                                            )
+
+                                withContext(Dispatchers.IO) {
+                                    currentWeatherRepository.insertWeather(
+                                        CurrentWeather(
+                                            id = 0,
+                                            isAvailable = true,
+                                            data = currentWeather.toMappedWeather()
+                                        )
+                                    )
+                                }
+
 //                                            currentWeatherRepository.fetchWeather().first()
                                 withContext(Dispatchers.Main) {
                                     _mappedWeather.value =
@@ -264,10 +296,32 @@ class LocationViewModel @Inject constructor(
                 ).collect { forecastWeather ->
                     when (forecastWeather) {
                         is NETWORK_RESULT.Success -> {
+
+
+                            Log.d("DATAB", "fetchWeather: got forecast ${forecastWeather.data}")
+                            withContext(Dispatchers.IO) {
+
+                                val forecast = (forecastWeather.data as ForeCastResponse).list.map { it.toMappedForecast() }
+//                                if(_forecastData.value != null) {
+//                                    currentForecastRepository.updateForecast(
+//                                        CurrentForecast(
+//                                            id = 0,
+//                                            data = forecast
+//                                        )
+//                                    )
+//                                } else {
+                                    currentForecastRepository.insertForecast(
+                                        CurrentForecast(
+                                            id = 1,
+                                            data = forecast
+                                        )
+                                    )
+//                                }
+                            }
                             withContext(Dispatchers.Main) {
                                 delay(200)
                                 _isLoading.value = false
-                                _forecastData.value = forecastWeather.data
+                                _forecastData.value = (forecastWeather.data as ForeCastResponse).list.map { it.toMappedForecast() }
                                 _refreshCount.value = _refreshCount.value + 1
                             }
                         }
@@ -305,6 +359,7 @@ class LocationViewModel @Inject constructor(
             weatherData.value = null
             getLocationDataUseCase(location).collect { queryLocationWeather ->
                 withContext(Dispatchers.Main) {
+
                     _searchWeatherData.value = queryLocationWeather.data
                 }
             }

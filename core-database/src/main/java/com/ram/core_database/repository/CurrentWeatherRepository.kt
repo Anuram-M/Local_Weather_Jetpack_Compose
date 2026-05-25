@@ -1,6 +1,6 @@
 package com.ram.core_database.repository
 
-import com.ram.core_database.entiry.CurrentWeather
+import com.ram.core_database.entity.CurrentWeather
 import kotlinx.coroutines.flow.Flow
 
 interface CurrentWeatherRepository {

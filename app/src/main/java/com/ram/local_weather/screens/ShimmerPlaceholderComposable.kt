@@ -17,20 +17,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
-@Composable
-fun ShimmerPlaceholderComposable() {
+fun Modifier.addShimmerEffect(): Modifier = composed {
     val shimmerColors = listOf(
         Color.LightGray.copy(alpha = 0.6f),
         Color.LightGray.copy(alpha = 0.3f),
         Color.LightGray.copy(alpha = 0.6f)
     )
 
-    val transition = rememberInfiniteTransition(label = "")
+    val transition = rememberInfiniteTransition(label = "shimmer_transition")
     val translateAnim by transition.animateFloat(
         initialValue = 0f,
         targetValue = 500f,
@@ -38,16 +39,47 @@ fun ShimmerPlaceholderComposable() {
             animation = tween(1000, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
         ),
-        label = ""
+        label = "shimmer_offset"
     )
 
-    val brush = remember(translateAnim) {
-        Brush.linearGradient(
-            colors = shimmerColors,
-            start = Offset(translateAnim - 200f, translateAnim - 200f),
-            end = Offset(translateAnim, translateAnim)
+    this.drawWithContent {
+        drawRect(
+            brush = Brush.linearGradient(
+                colors = shimmerColors,
+                start = Offset(translateAnim - 200f, translateAnim - 200f),
+                end = Offset(translateAnim, translateAnim)
+            )
         )
+        drawContent()
     }
+}
+
+@Composable
+fun ShimmerPlaceholderComposable() {
+//    val shimmerColors = listOf(
+//        Color.LightGray.copy(alpha = 0.6f),
+//        Color.LightGray.copy(alpha = 0.3f),
+//        Color.LightGray.copy(alpha = 0.6f)
+//    )
+//
+//    val transition = rememberInfiniteTransition(label = "")
+//    val translateAnim by transition.animateFloat(
+//        initialValue = 0f,
+//        targetValue = 500f,
+//        animationSpec = infiniteRepeatable(
+//            animation = tween(1000, easing = LinearEasing),
+//            repeatMode = RepeatMode.Restart
+//        ),
+//        label = ""
+//    )
+//
+//    val brush = remember(translateAnim) {
+//        Brush.linearGradient(
+//            colors = shimmerColors,
+//            start = Offset(translateAnim - 200f, translateAnim - 200f),
+//            end = Offset(translateAnim, translateAnim)
+//        )
+//    }
 
     Box(
         modifier = Modifier
@@ -59,7 +91,6 @@ fun ShimmerPlaceholderComposable() {
                 Modifier
                     .fillMaxWidth()
                     .height(350.dp),
-                brush
             )
         }
     }

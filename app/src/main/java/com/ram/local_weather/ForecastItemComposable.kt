@@ -19,14 +19,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.ram.core_database.dto.MappedForecast
 import com.ram.core_domain.models.ForecastItem
 import com.ram.local_weather.util.DateConvertor
 import kotlin.math.round
 
 @Composable
-fun ForecastItemComposable(forecastItem: ForecastItem, spFont: FontFamily) {
-    val time = DateConvertor().getDateAndTime(forecastItem.dt).second
-    val date = DateConvertor().getDayLabel(forecastItem.dt)
+fun ForecastItemComposable(forecastItem: MappedForecast, spFont: FontFamily) {
+    val time = DateConvertor().getDateAndTime(forecastItem.dateInMillis).second
+    val date = DateConvertor().getDayLabel(forecastItem.dateInMillis)
     val textColor = Color.Black
     Card(
         modifier = Modifier
@@ -43,14 +44,14 @@ fun ForecastItemComposable(forecastItem: ForecastItem, spFont: FontFamily) {
                 .padding(5.dp)
         ) {
             Text(
-                round(forecastItem.main.temp).toInt().toString() + "º C",
+                round(forecastItem.temp).toInt().toString() + "º C",
                 fontSize = 24.sp,
                 modifier = Modifier.padding(5.dp),
                 color = textColor,
                 fontFamily = spFont
             )
             AsyncImage(
-                model = "https://openweathermap.org/img/wn/${forecastItem.weather[0].icon}@2x.png",
+                model = "https://openweathermap.org/img/wn/${forecastItem.icon}@2x.png",
                 contentDescription = "",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier.size(75.dp)
@@ -59,7 +60,6 @@ fun ForecastItemComposable(forecastItem: ForecastItem, spFont: FontFamily) {
             Text(
                 date,
                 fontSize = 14.sp,
-//                modifier = Modifier.padding(bottom = 5.dp),
                 color = textColor,
                 fontFamily = spFont,
                 fontWeight = FontWeight.Bold

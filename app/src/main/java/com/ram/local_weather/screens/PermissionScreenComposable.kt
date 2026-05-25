@@ -52,6 +52,9 @@ fun PermissionScreenComposable(
 ) {
 
     val context = LocalContext.current.applicationContext
+    val checkerUtil by remember {
+        mutableStateOf(CheckerUtil(context))
+    }
     var showBackgroundPermissionDialog by remember {
         mutableStateOf(false)
     }
@@ -150,7 +153,7 @@ fun PermissionScreenComposable(
     }
 
     var notificationStatus by remember {
-        mutableStateOf(CheckerUtil().checkNotificationPermission(context))
+        mutableStateOf(checkerUtil.checkNotificationPermission())
     }
 
     val notificationLauncher = rememberLauncherForActivityResult(

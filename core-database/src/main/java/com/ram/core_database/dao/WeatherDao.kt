@@ -4,8 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy.Companion.REPLACE
 import androidx.room.Query
-import com.ram.core_database.dto.MappedWeather
-import com.ram.core_database.entiry.CurrentWeather
+import com.ram.core_database.entity.CurrentWeather
 
 @Dao
 interface WeatherDao {

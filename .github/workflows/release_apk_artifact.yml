@@ -1,0 +1,51 @@
+name: Release apk artifact
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+
+
+jobs:
+  create-release:
+    name: Build signed apk
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+          cache: 'gradle'
+
+      - name: Grant gradlew execute permissions
+        run: chmod +x gradlew
+
+      - name: Create the release
+        id: sign_app
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+
+
+      - name: Assemble release
+        run: ./gradlew assembleRelease
+
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: ${{ steps.sign_app.outputs.signedReleaseFile }}
+          name: Release ${{ github.ref_name }}

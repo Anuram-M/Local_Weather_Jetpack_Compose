@@ -1,7 +1,12 @@
 package com.ram.core_database.mapper
 
+import android.util.Log
 import com.ram.core_database.dto.GPSandWeatherModel
+import com.ram.core_database.dto.MappedForecast
 import com.ram.core_database.dto.MappedWeather
+import com.ram.core_domain.models.ForeCastResponse
+import com.ram.core_domain.models.ForecastItem
+import java.util.Locale
 import kotlin.math.round
 
 fun GPSandWeatherModel.toMappedWeather(): MappedWeather {
@@ -15,9 +20,21 @@ fun GPSandWeatherModel.toMappedWeather(): MappedWeather {
         weatherCategory = this.weatherResponse.weather[0].id,
         icon = this.weatherResponse.weather[0].icon,
         mainTemp = round(this.weatherResponse.main.temp),
-        minTemp = "%.1f".format(this.weatherResponse.main.temp_min).toDouble(),
-        maxTemp = "%.1f".format(this.weatherResponse.main.temp_max).toDouble(),
+        minTemp = String.format(Locale.ROOT, "%.1f", this.weatherResponse.main.temp_min).toDouble(),
+        maxTemp = String.format(Locale.ROOT, "%.1f", this.weatherResponse.main.temp_max).toDouble(),
         humidity = this.weatherResponse.main.humidity,
-        windSpeed = "%.1f".format((this.weatherResponse.wind.speed ?: 0.0) * 3.6).toDouble()
+        windSpeed = String.format(Locale.ROOT, "%.1f", (this.weatherResponse.wind.speed ?: 0.0) * 3.6).toDouble()
+    )
+}
+
+
+fun ForecastItem.toMappedForecast(): MappedForecast {
+    Log.d("FFT", "toMappedForecast: ${this.dt}")
+    Log.d("FFT", "toMappedForecast: ${this.weather[0].icon}")
+    Log.d("FFT", "toMappedForecast: ${round(this.main.temp)}")
+    return MappedForecast(
+        dateInMillis = this.dt,
+        icon = this.weather[0].icon,
+        temp = round(this.main.temp)
     )
 }
