@@ -28,6 +28,9 @@ jobs:
       - name: Grant gradlew execute permissions
         run: chmod +x gradlew
 
+      - name: Assemble release
+        run: ./gradlew assembleRelease
+
       - name: Create the release
         id: sign_app
         uses: r0adkll/sign-android-release@v1
@@ -39,8 +42,6 @@ jobs:
           keyPassword: ${{ secrets.KEY_PASSWORD }}
 
 
-      - name: Assemble release
-        run: ./gradlew assembleRelease
 
 
       - name: Create release
