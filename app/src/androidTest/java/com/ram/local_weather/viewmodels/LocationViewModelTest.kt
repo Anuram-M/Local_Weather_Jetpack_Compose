@@ -5,7 +5,7 @@ import android.content.Context
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.gms.location.FusedLocationProviderClient
-import com.ram.core_database.repository.CurrentWeatherRepository
+import com.ram.core_database.repository.CurrentWeatherAndForecastRepository
 import com.ram.core_database.repositoryimpl.CurrentWeatherRepositoryImpl
 import com.ram.core_domain.usecase.GetForecastUseCase
 import com.ram.core_domain.usecase.GetLocationDataUseCase
@@ -60,7 +60,7 @@ class LocationViewModelTest {
 
     lateinit var getLocationDataUseCase: GetLocationDataUseCase
 
-    lateinit var currentWeatherRepository: CurrentWeatherRepository
+    lateinit var currentWeatherRepository: CurrentWeatherAndForecastRepository
 
     @Before
     fun setUp() {

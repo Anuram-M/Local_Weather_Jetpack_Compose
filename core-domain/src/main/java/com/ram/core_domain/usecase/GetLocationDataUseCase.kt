@@ -8,18 +8,18 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.withContext
+import java.io.IOException
 import javax.inject.Inject
 
 class GetLocationDataUseCase @Inject constructor(val weatherRepository: WeatherRepository) {
-    operator fun invoke(queryLocation: String) = flow {
-        emit(weatherRepository.getWeatherDataFromLocation(location = queryLocation))
-    }.flowOn(Dispatchers.IO)
-        .catch { exception ->
-            emit(
-                NETWORK_RESULT.Error(
-                    data = null,
-                    exception.message ?: "Exception occurred in fetching location data"
-                )
-            )
+    suspend operator fun invoke(queryLocation: String): NETWORK_RESULT<WeatherResponse> {
+        return try {
+            withContext(Dispatchers.IO) {
+                weatherRepository.getWeatherDataFromLocation(queryLocation)
+            }
+        } catch (e: IOException) {
+            NETWORK_RESULT.Error(null, e.message)
         }
+    }
 }

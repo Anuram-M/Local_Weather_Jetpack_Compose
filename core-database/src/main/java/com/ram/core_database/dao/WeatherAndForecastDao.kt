@@ -4,15 +4,15 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy.Companion.REPLACE
 import androidx.room.Query
-import com.ram.core_database.entity.CurrentWeather
+import com.ram.core_database.entity.CurrentWeatherAndForecast
 
 @Dao
-interface WeatherDao {
+interface WeatherAndForecastDao {
 
     @Insert(onConflict = REPLACE)
-    fun insertWeather(weatherData: CurrentWeather)
+    fun insertWeatherAndForecast(weatherData: CurrentWeatherAndForecast)
 
     @Query("select * from current_weather")
-    fun fetchCurrentWeather(): CurrentWeather?
+    fun fetchCurrentData(): CurrentWeatherAndForecast?
 
 }

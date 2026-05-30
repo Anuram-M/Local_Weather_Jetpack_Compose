@@ -3,7 +3,6 @@ package com.ram.local_weather.util
 import android.annotation.SuppressLint
 import android.location.Location
 import android.os.Looper
-import android.util.Log
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -23,15 +22,13 @@ class LocationUtil @Inject constructor(
 
     @SuppressLint("MissingPermission")
     suspend fun getLocationDetails(): Location? = suspendCancellableCoroutine { cont ->
-//        Log.d("WORKWORK", "onLocationResult: 12345 : before getting the location")
         val locationRequest =
             LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000L).setMaxUpdates(1).build()
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
                 super.onLocationResult(result)
-                if(cont.isActive) {
+                if (cont.isActive) {
                     result.lastLocation?.let {
-                        Log.d("WORKWORK", "onLocationResult: 12345 : ${result.lastLocation}")
                         location = it
                         cont.resume(it)
                     } ?: cont.resume(null)
@@ -39,14 +36,12 @@ class LocationUtil @Inject constructor(
                 fusedLocationProviderClient.removeLocationUpdates(this)
             }
         }
-//        Log.d("WORKWORK", "onLocationResult: 12345 : calling the fusedlocation")
         fusedLocationProviderClient.requestLocationUpdates(
             locationRequest,
             locationCallback,
             Looper.getMainLooper()
         )
         cont.invokeOnCancellation {
-//            Log.d("WORKWORK", "onLocationResult: 12345 : cancelling the fusedlocation")
             fusedLocationProviderClient.removeLocationUpdates(locationCallback)
         }
     }
