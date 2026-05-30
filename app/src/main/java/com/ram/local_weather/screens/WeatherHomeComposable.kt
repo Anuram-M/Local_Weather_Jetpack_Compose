@@ -9,6 +9,7 @@ import android.content.IntentFilter
 import android.content.IntentSender
 import android.location.LocationManager
 import android.os.Build
+import android.util.Log
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
@@ -51,6 +52,7 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -70,14 +72,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.location.Priority
-import com.google.firebase.Firebase
-import com.google.firebase.firestore.firestore
 import com.ram.core_database.dto.MappedWeather
 import com.ram.local_weather.ForecastItemComposable
 import com.ram.local_weather.R
@@ -92,8 +93,15 @@ import kotlinx.coroutines.launch
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun WeatherHomeComposable(
-    locationViewModel: LocationViewModel
+    locationViewModel: LocationViewModel,
+    navController: NavHostController
 ) {
+    // 1. Declare a static class wrapper or an anonymous object tracker
+    val tracker = remember { object { var count = 0 } }
+    tracker.count++
+
+    // Log directly during composition execution
+    Log.d("COMPOSE", "WeatherScreen recomposed: ${tracker.count}")
     val context = LocalContext.current.applicationContext
 
     val checkerUtil by remember {
@@ -105,7 +113,6 @@ fun WeatherHomeComposable(
 
     val coroutineScope = rememberCoroutineScope()
 
-    val searchDefaultList by locationViewModel.searchLocations.collectAsStateWithLifecycle()
     val toggleLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartIntentSenderForResult()
     ) {  result ->
@@ -125,37 +132,22 @@ fun WeatherHomeComposable(
 
                 showLocationToggleH(context, locationViewModel, toggleLauncher)
             }
-            else -> {
-
-            }
         }
     }
 
     LaunchedEffect(Unit) {
-//        loading = true
         locationViewModel.getLocationUpdates(context)
     }
 
-//    LaunchedEffect(Unit) {
-//        val periodicCheckRequest = PeriodicWorkRequestBuilder<IconChangerWorker>(2,TimeUnit.MINUTES).setInitialDelay(100, TimeUnit.SECONDS).build()
-//
-//        WorkManager.getInstance(context)
-//            .enqueueUniquePeriodicWork("UNiq2", ExistingPeriodicWorkPolicy.KEEP, periodicCheckRequest)
-//
-//    }
 
-
-    val weatherData by locationViewModel.mappedWeather.collectAsStateWithLifecycle()
-    val isLoading by locationViewModel.isLoading.collectAsStateWithLifecycle()
-    val forecastData by locationViewModel.forecastData
-    var searchWeatherData by locationViewModel.searchWeather
-    val refreshCount by locationViewModel.refreshCount
+//    val weatherData by locationViewModel.mappedWeather.collectAsStateWithLifecycle()
+//    val isLoading by locationViewModel.isLoading.collectAsStateWithLifecycle()
+//    val forecastData by locationViewModel.forecastData.collectAsStateWithLifecycle()
+//    val searchWeatherData by locationViewModel.searchWeather.collectAsStateWithLifecycle()
+    val weatherUIState by locationViewModel.weatherDataUI.collectAsStateWithLifecycle()
     val textColor = Color.Black
-
-    var lastKnownState by remember { mutableStateOf<Boolean?>(null) }
-    var isSearchWeather by remember {
-        mutableStateOf(false)
-    }
+    val refreshCount by locationViewModel.refreshCount
+    val initialLocationEnabled = checkerUtil.checkLocationEnabled()    // one call
 
     var mainBg by remember {
         mutableStateOf(Color.Gray)
@@ -176,18 +168,20 @@ fun WeatherHomeComposable(
     }
 
     var pingIcon by remember {
-        mutableStateOf(R.drawable.location_off)
+        mutableStateOf(
+            if (initialLocationEnabled) R.drawable.on_location
+            else R.drawable.location_off
+        )
     }
+    var isLocationEnabled by remember { mutableStateOf(initialLocationEnabled) }
     DisposableEffect(Unit) {
-        pingIcon = if(checkerUtil.checkLocationEnabled()) R.drawable.on_location else R.drawable.location_off
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 if (intent?.action == LocationManager.PROVIDERS_CHANGED_ACTION) {
                     val isEnabled = checkerUtil.checkLocationEnabled()
-                    if (isEnabled != lastKnownState) {
-                        lastKnownState = isEnabled
+                    if (isEnabled != isLocationEnabled) {
+                        isLocationEnabled = isEnabled
                         locationViewModel.stopLocationUpdate()
-//                        locationViewModel.checkAppState()
                         pingIcon = if(isEnabled) R.drawable.on_location else R.drawable.location_off
                     }
                 }
@@ -201,34 +195,32 @@ fun WeatherHomeComposable(
     }
 
 
-    LaunchedEffect(weatherData) {
-        if (weatherData != null) {
-//            animationWidget = weatherData?.weather!![0].main
-//            loading = false
+    LaunchedEffect(weatherUIState.weatherData) {
+        if (weatherUIState.weatherData != null) {
             isRefreshing = false
         }
     }
 
-    LaunchedEffect(searchWeatherData) {
-        if (searchWeatherData != null) {
-            isDay = searchWeatherData?.weather!![0].icon.endsWith('d')
-            animationWidget = searchWeatherData?.weather!![0].main
-            mainBg = BackgroundSelectorUtil().backgroundChoice(searchWeatherData?.weather!![0].id)
-        }
-        if (searchWeatherData == null && weatherData != null) {
-//            animationWidget = weatherData?.weather!![0].main
-            isDay = weatherData?.icon?.endsWith('d') == true
-            mainBg = BackgroundSelectorUtil().backgroundChoice(weatherData?.weatherCategory!!)
-        }
-    }
+//    LaunchedEffect(searchWeatherData) {
+//        if (searchWeatherData != null) {
+//            isDay = searchWeatherData?.weather!![0].icon.endsWith('d')
+//            animationWidget = searchWeatherData?.weather!![0].main
+//            mainBg = BackgroundSelectorUtil().backgroundChoice(searchWeatherData?.weather!![0].id)
+//        }
+//        if (searchWeatherData == null && weatherData != null) {
+////            animationWidget = weatherData?.weather!![0].main
+//            isDay = weatherData?.icon?.endsWith('d') == true
+//            mainBg = BackgroundSelectorUtil().backgroundChoice(weatherData?.weatherCategory!!)
+//        }
+//    }
 
     LaunchedEffect(refreshCount) {
-        weatherData?.let {
-            if (searchWeatherData == null) {
-//                animationWidget = weatherData?.weather!![0].main
-            }
-            isDay = weatherData?.icon?.endsWith('d') == true
-            mainBg = BackgroundSelectorUtil().backgroundChoice(weatherData?.weatherCategory!!)
+        weatherUIState.weatherData?.let {
+//            if (searchWeatherData == null) {
+////                animationWidget = weatherData?.weather!![0].main
+//            }
+            isDay = weatherUIState.weatherData?.icon?.endsWith('d') == true
+            mainBg = BackgroundSelectorUtil().backgroundChoice(weatherUIState.weatherData?.weatherCategory!!)
         }
     }
 
@@ -304,15 +296,12 @@ fun WeatherHomeComposable(
                     expanded = expand,
                     onExpandChange = { expand = !expand },
                     locationViewModel,
-                    isSearchWeather,
-                    onSearch = { isSearchWeather = true },
                     onClear = {
                         locationViewModel.resetSearchWeather()
                         locationViewModel.getLocationUpdates(context)
-
                     },
-                    searchDefaultList,
-                    poppinsFont
+                    poppinsFont,
+                    navController
                 )
                 PullToRefreshBox(
                     modifier = Modifier
@@ -339,16 +328,12 @@ fun WeatherHomeComposable(
                 ) {
 
                     when {
-                        isLoading || isRefreshing -> {
+//                        isLoading || isRefreshing
+                        weatherUIState.isLoading -> {
                             ShimmerPlaceholderComposable()
                         }
 
-                        searchWeatherData != null -> {
-                            QueryLocationWeatherComposable(searchWeatherData!!)
-                        }
-
-                        weatherData != null -> {
-
+                        weatherUIState.isCurrent -> {
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize(),
@@ -391,22 +376,22 @@ fun WeatherHomeComposable(
                                         ) {
                                             LocalityCard(
                                                 Pair(
-                                                    weatherData?.locality,
-                                                    weatherData?.subLocality
+                                                    weatherUIState.weatherData?.locality,
+                                                    weatherUIState.weatherData?.subLocality
                                                 ), poppinsFont
                                             )
-                                            WeatherDataCard(weatherData!!, textColor, poppinsFont)
+                                            WeatherDataCard(weatherUIState.weatherData!!, textColor, poppinsFont)
                                         }
                                     }
 
                                     AnimatedVisibility(
-                                        visible = forecastData != null,
+                                        visible = weatherUIState.forecastData != null,
                                     ) {
                                         LazyRow(
                                             modifier = Modifier
                                                 .padding(horizontal = 5.dp)
                                         ) {
-                                            items(forecastData!!) { item ->
+                                            items(weatherUIState.forecastData!!) { item ->
                                                 ForecastItemComposable(item, poppinsFont)
                                             }
                                         }
@@ -415,9 +400,14 @@ fun WeatherHomeComposable(
                             }
                         }
 
+                        !weatherUIState.isCurrent -> {
+                            QueryLocationWeatherComposable(weatherUIState.searchWeather)
+                        }
                         else -> {
                             Box(
-                                modifier = Modifier.fillMaxSize().padding(20.dp),
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(20.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(

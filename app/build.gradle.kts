@@ -154,4 +154,5 @@ dependencies {
     androidTestImplementation("org.mockito.kotlin:mockito-kotlin:5.3.1")
     androidTestImplementation("androidx.arch.core:core-testing:2.2.0")
 
+    debugImplementation("androidx.compose.runtime:runtime-tracing:1.0.0-beta01")
 }

@@ -11,8 +11,8 @@ import kotlin.math.round
 
 fun GPSandWeatherModel.toMappedWeather(): MappedWeather {
     return MappedWeather(
-        locality = this.address.locality,
-        subLocality = this.address.subLocality,
+        locality = this.locality,
+        subLocality = this.subLocality,
         latitude = this.weatherResponse.coord.lat,
         longitude = this.weatherResponse.coord.lon,
         weather = this.weatherResponse.weather[0].main,
@@ -23,18 +23,10 @@ fun GPSandWeatherModel.toMappedWeather(): MappedWeather {
         minTemp = String.format(Locale.ROOT, "%.1f", this.weatherResponse.main.temp_min).toDouble(),
         maxTemp = String.format(Locale.ROOT, "%.1f", this.weatherResponse.main.temp_max).toDouble(),
         humidity = this.weatherResponse.main.humidity,
-        windSpeed = String.format(Locale.ROOT, "%.1f", (this.weatherResponse.wind.speed ?: 0.0) * 3.6).toDouble()
-    )
-}
-
-
-fun ForecastItem.toMappedForecast(): MappedForecast {
-    Log.d("FFT", "toMappedForecast: ${this.dt}")
-    Log.d("FFT", "toMappedForecast: ${this.weather[0].icon}")
-    Log.d("FFT", "toMappedForecast: ${round(this.main.temp)}")
-    return MappedForecast(
-        dateInMillis = this.dt,
-        icon = this.weather[0].icon,
-        temp = round(this.main.temp)
+        windSpeed = String.format(
+            Locale.ROOT,
+            "%.1f",
+            (this.weatherResponse.wind.speed ?: 0.0) * 3.6
+        ).toDouble()
     )
 }

@@ -1,24 +1,24 @@
 package com.ram.core_database.repositoryimpl
 
 import com.ram.core_database.MyDatabase
-import com.ram.core_database.entity.CurrentWeather
-import com.ram.core_database.repository.CurrentWeatherRepository
+import com.ram.core_database.entity.CurrentWeatherAndForecast
+import com.ram.core_database.repository.CurrentWeatherAndForecastRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
-class CurrentWeatherRepositoryImpl @Inject constructor() : CurrentWeatherRepository {
+class CurrentWeatherRepositoryImpl @Inject constructor() : CurrentWeatherAndForecastRepository {
 
     @Inject
     lateinit var db: MyDatabase
 
-    override fun insertWeather(currentWeather: CurrentWeather) {
-       db.weatherDao().insertWeather(currentWeather)
+    override fun insertData(currentWeather: CurrentWeatherAndForecast) {
+       db.weatherDao().insertWeatherAndForecast(currentWeather)
     }
 
-    override fun fetchWeather(): Flow<CurrentWeather?> = flow {
-        emit(db.weatherDao().fetchCurrentWeather())
+    override fun fetchData(): Flow<CurrentWeatherAndForecast?> = flow {
+        emit(db.weatherDao().fetchCurrentData())
     }.flowOn(Dispatchers.IO)
 }

@@ -4,6 +4,7 @@ import android.location.Address
 import com.ram.core_domain.models.WeatherResponse
 
 data class GPSandWeatherModel(
-    val address: Address,
+    val subLocality: String? = null,
+    val locality: String? = null,
     val weatherResponse: WeatherResponse
 )

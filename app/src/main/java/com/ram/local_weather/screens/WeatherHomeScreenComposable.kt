@@ -35,7 +35,8 @@ fun WeatherHomeScreen(locationViewModel: LocationViewModel = hiltViewModel()) {
                 navController
             )
         }
-        composable("weather") { WeatherHomeComposable(locationViewModel) }
+        composable("weather") { WeatherHomeComposable(locationViewModel, navController) }
+        composable("history") { HistoryComposable(locationViewModel, navController) }
     }
 
     LaunchedEffect(state) {

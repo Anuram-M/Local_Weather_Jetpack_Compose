@@ -63,7 +63,6 @@ fun PermissionScreenComposable(
     ) { result ->
         if(result) {
             locationViewModel.checkAppState()
-            Log.d("PERMIA", "PermissionScreenComposable: ${result}")
         }
 
     }
