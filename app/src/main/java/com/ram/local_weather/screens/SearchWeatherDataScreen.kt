@@ -27,12 +27,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.ram.core_database.dto.MappedWeather
 import com.ram.core_domain.models.WeatherResponse
 import com.ram.local_weather.ui.theme.poppinsFont
 import kotlin.math.round
 
 @Composable
-fun QueryLocationWeatherComposable(weatherData: WeatherResponse?) {
+fun QueryLocationWeatherComposable(weatherData: MappedWeather?) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -66,7 +67,7 @@ fun QueryLocationWeatherComposable(weatherData: WeatherResponse?) {
 }
 
 @Composable
-fun SearchedWeather(weatherData: WeatherResponse?, textColor: Color, spFont: FontFamily) {
+fun SearchedWeather(weatherData: MappedWeather?, textColor: Color, spFont: FontFamily) {
     AnimatedVisibility(visible = weatherData != null) {
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -74,7 +75,7 @@ fun SearchedWeather(weatherData: WeatherResponse?, textColor: Color, spFont: Fon
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                round(weatherData!!.main.temp).toInt().toString() + "º C",
+                round(weatherData!!.mainTemp).toInt().toString() + "º C",
                 fontSize = 60.sp,
                 fontWeight = FontWeight.Bold,
                 color = textColor,
@@ -82,7 +83,7 @@ fun SearchedWeather(weatherData: WeatherResponse?, textColor: Color, spFont: Fon
                 fontFamily = spFont
             )
             Text(
-                weatherData!!.weather[0].description,
+                weatherData.description!!,
                 color = textColor,
                 fontSize = 18.sp,
                 fontFamily = spFont
@@ -91,7 +92,7 @@ fun SearchedWeather(weatherData: WeatherResponse?, textColor: Color, spFont: Fon
                 modifier = Modifier
                     .width(100.dp)
                     .height(100.dp),
-                model = "https://openweathermap.org/img/wn/${weatherData!!.weather[0].icon}@4x.png",
+                model = "https://openweathermap.org/img/wn/${weatherData!!.icon}@4x.png",
                 contentDescription = "Weather Icon",
                 contentScale = ContentScale.Fit
             )
@@ -120,7 +121,7 @@ fun SearchedWeather(weatherData: WeatherResponse?, textColor: Color, spFont: Fon
                             fontFamily = spFont
                         )
                         Text(
-                            text = "%.1f".format(weatherData!!.main.temp_min) + " ºC",
+                            text = "${weatherData.minTemp} ºC",
                             fontSize = 14.sp,
                             color = textColor,
                             fontFamily = spFont
@@ -148,7 +149,7 @@ fun SearchedWeather(weatherData: WeatherResponse?, textColor: Color, spFont: Fon
                             fontFamily = spFont
                         )
                         Text(
-                            text = "%.1f".format(weatherData!!.main.temp_min) + " ºC",
+                            text = "${weatherData.maxTemp} ºC",
                             fontSize = 14.sp,
                             color = textColor,
                             fontFamily = spFont
@@ -181,7 +182,7 @@ fun SearchedWeather(weatherData: WeatherResponse?, textColor: Color, spFont: Fon
                             fontFamily = spFont
                         )
                         Text(
-                            text = weatherData!!.main.humidity.toString() + "%",
+                            text = "${weatherData.humidity}%",
                             fontSize = 14.sp,
                             color = textColor,
                             fontFamily = spFont
@@ -209,7 +210,7 @@ fun SearchedWeather(weatherData: WeatherResponse?, textColor: Color, spFont: Fon
                             fontFamily = spFont
                         )
                         Text(
-                            text = "%.2f".format((weatherData?.wind?.speed ?: 0.0) * 3.6) + " km/h",
+                            text = "${weatherData.windSpeed} km/h",
                             fontSize = 14.sp,
                             color = textColor,
                             fontFamily = spFont
@@ -223,17 +224,17 @@ fun SearchedWeather(weatherData: WeatherResponse?, textColor: Color, spFont: Fon
 }
 
 @Composable
-fun SearchLocalityCard(address: WeatherResponse?, spFont: FontFamily) {
+fun SearchLocalityCard(address: MappedWeather?, spFont: FontFamily) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         AnimatedVisibility(
-            visible = address?.name != null
+            visible = address?.locality != null
         ) {
-            address?.name?.let {
+            address?.locality?.let {
                 Text(
-                    address?.name!!,
+                    address?.locality!!,
                     fontSize = 20.sp,
                     color = Color.Black,
                     fontWeight = FontWeight.Bold,

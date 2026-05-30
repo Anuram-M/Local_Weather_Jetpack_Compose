@@ -11,6 +11,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
+import androidx.compose.ui.util.trace
 import com.ram.local_weather.screens.WeatherHomeScreen
 import com.ram.local_weather.ui.theme.LocalWeatherTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -22,11 +23,15 @@ class MainActivity : ComponentActivity() {
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            LocalWeatherTheme {
-                WeatherHomeScreen()
+        trace("Activity.onCreate") {
+            super.onCreate(savedInstanceState)
+            enableEdgeToEdge()
+            setContent {
+                trace("setContent") {
+                    LocalWeatherTheme {
+                        WeatherHomeScreen()
+                    }
+                }
             }
         }
     }
