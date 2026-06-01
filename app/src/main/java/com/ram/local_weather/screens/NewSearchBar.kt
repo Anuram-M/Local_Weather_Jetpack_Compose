@@ -59,7 +59,6 @@ fun NewSearchBar(
         expanded = expanded,
         onExpandedChange = { onExpandChange() },
         modifier = Modifier
-            .fillMaxWidth()
             .heightIn(max = 350.dp)
             .padding(start = 20.dp, end = 20.dp, bottom = 10.dp),
         inputField = {
@@ -79,7 +78,7 @@ fun NewSearchBar(
                 onExpandedChange = { onExpandChange() },
                 placeholder = {
                     Text(
-                        "Search weather by location...",
+                        "Search by city...",
                         color = Color.Gray,
                         fontFamily = poppinsFont,
                         fontSize = 14.sp
@@ -94,16 +93,16 @@ fun NewSearchBar(
                 },
                 trailingIcon = {
                     if (!expanded) {
-                        IconButton(
-                            onClick = {
-                                navController.navigate("history")
-                            }) {
-                            Icon(
-                                Icons.Default.ShoppingCart,
-                                contentDescription = "History",
-                                tint = Color.Black
-                            )
-                        }
+//                        IconButton(
+//                            onClick = {
+//                                navController.navigate("history")
+//                            }) {
+//                            Icon(
+//                                Icons.Default.ShoppingCart,
+//                                contentDescription = "History",
+//                                tint = Color.Black
+//                            )
+//                        }
                     } else if (query.isNotEmpty()) {
                         IconButton(
                             onClick = {

@@ -165,8 +165,8 @@ class LocationViewModel @Inject constructor(
         }
 
         if (!checkerUtil.checkLocationEnabled()) {
-//            updateLoading(true)
-        } else {
+////            updateLoading(true)
+//        } else {
             return
         }
 
@@ -276,7 +276,8 @@ class LocationViewModel @Inject constructor(
                             isLoading = false,
                             isCurrent = true,
                             weatherData = currentWeather,
-                            forecastData = currentForecast
+                            forecastData = currentForecast,
+                            error = null
                         )
                     }
                 }
@@ -330,7 +331,9 @@ class LocationViewModel @Inject constructor(
                         lastChecked = System.currentTimeMillis()
                     )
                 )
-                _weatherDataUI.update { it.copy(isLoading = false, searchWeather = mappedWeather) }
+                _weatherDataUI.update { it.copy(isLoading = false, searchWeather = mappedWeather, error = null) }
+            } else if(searchResult is NETWORK_RESULT.Error){
+                _weatherDataUI.update { it.copy(isLoading = false, error = searchResult.message,) }
             }
         }
     }

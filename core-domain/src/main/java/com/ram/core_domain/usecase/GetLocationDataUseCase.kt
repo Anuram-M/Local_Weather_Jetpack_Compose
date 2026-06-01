@@ -18,7 +18,7 @@ class GetLocationDataUseCase @Inject constructor(val weatherRepository: WeatherR
             withContext(Dispatchers.IO) {
                 weatherRepository.getWeatherDataFromLocation(queryLocation)
             }
-        } catch (e: IOException) {
+        } catch (e: Exception) {
             NETWORK_RESULT.Error(null, e.message)
         }
     }

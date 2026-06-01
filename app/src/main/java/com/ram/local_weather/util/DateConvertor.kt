@@ -1,5 +1,7 @@
 package com.ram.local_weather.util
 
+import android.text.format.DateUtils
+import android.util.Log
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -40,5 +42,20 @@ class DateConvertor {
         val dateFormatter = DateTimeFormatter.ofPattern("MMM dd").withZone(ZoneId.of("Asia/Kolkata"))
 
         return dateFormatter.format(dateTime)
+    }
+
+    fun getExactMomentAgo(epoch: Long) : String  {
+        val currentMilli = System.currentTimeMillis()
+
+        if(currentMilli < epoch + 59999) {
+            return "Just Now"
+        }
+
+        return DateUtils.getRelativeTimeSpanString(
+            epoch,
+            currentMilli,
+            DateUtils.MINUTE_IN_MILLIS,
+            DateUtils.FORMAT_ABBREV_RELATIVE
+        ).toString()
     }
 }
