@@ -25,17 +25,22 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.ram.local_weather.ui.theme.poppinsFont
+import com.ram.local_weather.util.DateConvertor
 import com.ram.local_weather.viewmodels.LocationViewModel
 import kotlin.math.round
 
@@ -45,15 +50,16 @@ import kotlin.math.round
 fun HistoryComposable(locationViewModel: LocationViewModel, navController: NavController) {
 
     val history by locationViewModel.historyData.collectAsStateWithLifecycle()
+    val dateConverter = remember {
+        mutableStateOf(DateConvertor())
+    }
     LaunchedEffect(Unit) {
         locationViewModel.fetchHistory()
     }
     Scaffold(
-        containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
-
                     containerColor = Color.Transparent,
                     titleContentColor = Color.Black,
                     navigationIconContentColor = Color.Black,
@@ -77,59 +83,103 @@ fun HistoryComposable(locationViewModel: LocationViewModel, navController: NavCo
         }
     ) { innerPadding ->
         Box(
-            modifier = Modifier.fillMaxSize().systemBarsPadding().padding(top = 60.dp)
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    brush = Brush.linearGradient(
+                        colors = listOf(Color(0xffBDC3C7), Color.Black)
+                    )
+                )
         ) {
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth().padding(10.dp)
-            ) {
-                items(history!!) {item ->
-                    Box(
-                        modifier = Modifier.fillMaxWidth().padding(5.dp)
-                    ) {
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(
-                                containerColor = Color(0xffBDC3C7)
-                            )
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth().padding(15.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    item.place,
-                                    style = TextStyle(
-                                        fontFamily = poppinsFont,
-                                        fontSize = 24.sp,
-                                        color = Color.Black,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                )
-                                Column(
-                                    horizontalAlignment = Alignment.End,
-                                    verticalArrangement = Arrangement.Center
-                                ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .systemBarsPadding()
+                    .padding(top = 60.dp)
 
-                                    Text(
-                                        text = "${round( item.temp).toInt()}ºC",
-                                        style = TextStyle(
-                                            fontFamily = poppinsFont,
-                                            fontSize = 20.sp,
-                                            color = Color.Black,
-                                            fontWeight = FontWeight.Bold
+            ) {
+                if (!history.isNullOrEmpty()) {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp)
+                    ) {
+                        items(history!!) { item ->
+                            val relativeTime =
+                                dateConverter.value.getExactMomentAgo(item.lastChecked)
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(5.dp)
+                            ) {
+                                Card(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = Color(0xffBDC3C7)
+                                    )
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(15.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            item.place,
+                                            style = TextStyle(
+                                                fontFamily = poppinsFont,
+                                                fontSize = 24.sp,
+                                                color = Color.Black,
+                                                fontWeight = FontWeight.Bold
+                                            )
                                         )
-                                    )
-                                    Text(
-                                        item.lastChecked.toString()
-                                    )
+                                        Column(
+                                            horizontalAlignment = Alignment.End,
+                                            verticalArrangement = Arrangement.Center
+                                        ) {
+
+                                            Text(
+                                                text = "${round(item.temp).toInt()}ºC",
+                                                style = TextStyle(
+                                                    fontFamily = poppinsFont,
+                                                    fontSize = 20.sp,
+                                                    color = Color.Black,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            )
+                                            Text(
+                                                relativeTime,
+                                                style = TextStyle(
+                                                    fontSize = 12.sp,
+                                                    color = Color.DarkGray
+                                                )
+                                            )
+                                        }
+                                    }
+
                                 }
                             }
-
                         }
+                    }
+                } else {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center,
+                            text = "No records found!",
+                            style = TextStyle(
+                                fontSize = 18.sp,
+                                color = Color.Black
+                            )
+                        )
                     }
                 }
             }
+
         }
     }
 

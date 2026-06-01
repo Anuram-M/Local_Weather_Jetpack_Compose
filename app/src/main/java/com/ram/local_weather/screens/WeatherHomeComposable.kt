@@ -44,6 +44,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -198,21 +199,23 @@ fun WeatherHomeComposable(
     LaunchedEffect(weatherUIState.weatherData) {
         if (weatherUIState.weatherData != null) {
             isRefreshing = false
+            isDay = weatherUIState.weatherData?.icon?.endsWith('d') == true
+            mainBg = BackgroundSelectorUtil().backgroundChoice(weatherUIState.weatherData?.weatherCategory!!)
         }
     }
 
-//    LaunchedEffect(searchWeatherData) {
-//        if (searchWeatherData != null) {
-//            isDay = searchWeatherData?.weather!![0].icon.endsWith('d')
-//            animationWidget = searchWeatherData?.weather!![0].main
-//            mainBg = BackgroundSelectorUtil().backgroundChoice(searchWeatherData?.weather!![0].id)
-//        }
-//        if (searchWeatherData == null && weatherData != null) {
-////            animationWidget = weatherData?.weather!![0].main
-//            isDay = weatherData?.icon?.endsWith('d') == true
-//            mainBg = BackgroundSelectorUtil().backgroundChoice(weatherData?.weatherCategory!!)
-//        }
-//    }
+    LaunchedEffect(weatherUIState.searchWeather) {
+        if (weatherUIState.searchWeather != null) {
+            isDay = weatherUIState.searchWeather?.icon?.endsWith('d') == true
+//            animationWidget = weatherUIState.searchWeather?.main
+            mainBg = BackgroundSelectorUtil().backgroundChoice(weatherUIState.searchWeather?.weatherCategory!!)
+        }
+        if (weatherUIState.searchWeather == null && weatherUIState.weatherData != null) {
+//            animationWidget = weatherData?.weather!![0].main
+            isDay = weatherUIState.weatherData?.icon?.endsWith('d') == true
+            mainBg = BackgroundSelectorUtil().backgroundChoice(weatherUIState.weatherData?.weatherCategory!!)
+        }
+    }
 
     LaunchedEffect(refreshCount) {
         weatherUIState.weatherData?.let {
@@ -256,6 +259,7 @@ fun WeatherHomeComposable(
         }
 
     ) { innerPadding ->
+        Log.d("BDC", "WeatherHomeComposable: ${mainBg.value}, ${isDay}")
         Box(modifier = Modifier.fillMaxSize()) {
             Box(
                 modifier = Modifier
@@ -290,19 +294,53 @@ fun WeatherHomeComposable(
                 mutableStateOf(false)
             }
             Column(modifier = Modifier.systemBarsPadding()) {
-                NewSearchBar(
-                    query = query,
-                    onQueryChange = { query = it },
-                    expanded = expand,
-                    onExpandChange = { expand = !expand },
-                    locationViewModel,
-                    onClear = {
-                        locationViewModel.resetSearchWeather()
-                        locationViewModel.getLocationUpdates(context)
-                    },
-                    poppinsFont,
-                    navController
-                )
+                Row(
+                   modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                    ) {
+                        NewSearchBar(
+                            query = query,
+                            onQueryChange = { query = it },
+                            expanded = expand,
+                            onExpandChange = { expand = !expand },
+                            locationViewModel,
+                            onClear = {
+                                locationViewModel.resetSearchWeather()
+                                locationViewModel.getLocationUpdates(context)
+                            },
+                            poppinsFont,
+                            navController
+                        )
+                    }
+                    AnimatedVisibility(
+                        visible = !expand,
+                        modifier = Modifier.padding(end = 20.dp)
+                    ) {
+                        Card(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .weight(1f),
+                            shape = CircleShape,
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color(0xFFE0E0E0)
+                            )
+                        ) {
+                            IconButton(
+                                onClick = {
+                                    navController.navigate("history")
+                                }
+                            ) {
+                                Icon(painter = painterResource(R.drawable.history), tint = Color.Black, contentDescription = null, modifier = Modifier.size(24.dp))
+                            }
+                        }
+                    }
+                }
                 PullToRefreshBox(
                     modifier = Modifier
                         .fillMaxWidth(),
@@ -331,6 +369,22 @@ fun WeatherHomeComposable(
 //                        isLoading || isRefreshing
                         weatherUIState.isLoading -> {
                             ShimmerPlaceholderComposable()
+                        }
+
+                        !weatherUIState.error.isNullOrEmpty() -> {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    text = weatherUIState.error!!,
+                                    style = TextStyle(
+                                        fontSize = 18.sp
+                                    )
+                                )
+                            }
                         }
 
                         weatherUIState.isCurrent -> {
