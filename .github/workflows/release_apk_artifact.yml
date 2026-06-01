@@ -25,11 +25,14 @@ jobs:
           java-version: 17
           cache: 'gradle'
 
+      - name: Create google-services.json
+        run: echo "${{ secrets.GOOGLE_SERVICES }}" | base64 --decode > app/google-services.json
+
       - name: Grant gradlew execute permissions
         run: chmod +x gradlew
 
-      - name: Create Google services
-        run: echo "${{ secrets.GOOGLE_SERIVCES }}" | base64 --decode > app/google-services.json
+      - name: Assemble release
+        run: ./gradlew assembleRelease
 
       - name: Create the release
         id: sign_app
@@ -40,10 +43,10 @@ jobs:
           alias: ${{ secrets.KEY_ALIAS }}
           keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: "34.0.0"
 
 
-      - name: Assemble release
-        run: ./gradlew assembleRelease
 
 
       - name: Create release
