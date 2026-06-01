@@ -77,7 +77,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Create Google services
-        run: echo "${{ secrets.GOOGLE_SERIVCES }}" | base64 --decode > app/google-services.json
+        run: echo "${{ secrets.GOOGLE_SERVICES }}" | base64 --decode > app/google-services.json
 
       - name: Build Dev release for firebase
         run: ./gradlew assembleDebug
