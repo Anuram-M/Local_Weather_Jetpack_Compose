@@ -32,19 +32,22 @@ import com.ram.core_domain.usecase.GetLocationDataUseCase
 import com.ram.core_domain.usecase.GetWeatherUseCase
 import com.ram.core_firebase.repository.FirestoreRepository
 import com.ram.local_weather.UILOGIC_STATE
-import com.ram.local_weather.UIStateClass
+import com.ram.local_weather.stateclass.NavStateClass
+import com.ram.local_weather.stateclass.UIStateClass
 import com.ram.local_weather.util.CheckerUtil
 import com.ram.local_weather.util.PREF_KEYS
 import com.ram.local_weather.util.SharedPrefUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -90,6 +93,9 @@ class LocationViewModel @Inject constructor(
             initialValue = emptyList()
         )
 
+    var _navState = Channel<NavStateClass>(Channel.BUFFERED)
+    val navEvents = _navState.receiveAsFlow()
+
     init {
         fetchData()
         fetchHistory()
@@ -133,7 +139,8 @@ class LocationViewModel @Inject constructor(
                     SharedPrefUtil.saveBoolean(
                         PREF_KEYS.PERMISSION_ALREADY_ASKED.name, true
                     )
-                    return@withContext UILOGIC_STATE.LOGIC_PERMISSION_NEEDED
+//                    return@withContext UILOGIC_STATE.LOGIC_PERMISSION_NEEDED
+                    return@withContext NavStateClass.NavigateToPermission
                 }
 
                 val gpsEnabled = checkerUtil.checkLocationEnabled()
@@ -141,16 +148,24 @@ class LocationViewModel @Inject constructor(
                 if (locationPermissionGranted && !enableGPSShown && !gpsEnabled) {
                     stopLocationUpdate()
                     SharedPrefUtil.saveBoolean(PREF_KEYS.ALREADY_SHOWN.name, true)
-                    return@withContext UILOGIC_STATE.LOGIC_LOCATION_NEEDED
+//                    return@withContext UILOGIC_STATE.LOGIC_LOCATION_NEEDED
+                    return@withContext NavStateClass.NavigateToGPS
                 }
                 SharedPrefUtil.saveBoolean(PREF_KEYS.ALREADY_SHOWN.name, true)
-                UILOGIC_STATE.LOGIC_APP_READY
+//                UILOGIC_STATE.LOGIC_APP_READY
+                NavStateClass.NavigateToHome
             }
-            _uiState.value = newState
+            triggerNavigation(newState)
+//            _uiState.value = newState
         }
         return _uiState.value
     }
 
+    fun triggerNavigation(event: NavStateClass) {
+        viewModelScope.launch {
+            _navState.send(event)
+        }
+    }
     fun updateLoading(currentStatus: Boolean) {
         _weatherDataUI.update { it.copy(isLoading = currentStatus) }
     }
@@ -165,7 +180,7 @@ class LocationViewModel @Inject constructor(
         }
 
         if (!checkerUtil.checkLocationEnabled()) {
-////            updateLoading(true)
+            updateLoading(false)
 //        } else {
             return
         }
@@ -331,6 +346,7 @@ class LocationViewModel @Inject constructor(
                         lastChecked = System.currentTimeMillis()
                     )
                 )
+                _refreshCount.value += 1
                 _weatherDataUI.update { it.copy(isLoading = false, searchWeather = mappedWeather, error = null) }
             } else if(searchResult is NETWORK_RESULT.Error){
                 _weatherDataUI.update { it.copy(isLoading = false, error = searchResult.message,) }
@@ -339,6 +355,7 @@ class LocationViewModel @Inject constructor(
     }
 
     fun resetSearchWeather() {
+        lastExecutedTime = null
         _weatherDataUI.update { it.copy(isLoading = true, searchWeather = null) }
     }
 }

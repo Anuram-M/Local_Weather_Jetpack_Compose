@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -30,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
@@ -87,14 +89,16 @@ fun HistoryComposable(locationViewModel: LocationViewModel, navController: NavCo
                 .fillMaxSize()
                 .background(
                     brush = Brush.linearGradient(
-                        colors = listOf(Color(0xffBDC3C7), Color.Black)
+                        colors = listOf(Color(0xffBDC3C7), Color.Black),
+                        start = Offset(0f, 0f),
+                        end = Offset(0f, Float.POSITIVE_INFINITY)
                     )
                 )
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .systemBarsPadding()
+                    .safeContentPadding()
                     .padding(top = 60.dp)
 
             ) {
@@ -129,9 +133,9 @@ fun HistoryComposable(locationViewModel: LocationViewModel, navController: NavCo
                                             item.place,
                                             style = TextStyle(
                                                 fontFamily = poppinsFont,
-                                                fontSize = 24.sp,
+                                                fontSize = 20.sp,
                                                 color = Color.Black,
-                                                fontWeight = FontWeight.Bold
+                                                fontWeight = FontWeight.SemiBold
                                             )
                                         )
                                         Column(
@@ -140,7 +144,7 @@ fun HistoryComposable(locationViewModel: LocationViewModel, navController: NavCo
                                         ) {
 
                                             Text(
-                                                text = "${round(item.temp).toInt()}ºC",
+                                                text = "${round(item.temp).toInt()}º C",
                                                 style = TextStyle(
                                                     fontFamily = poppinsFont,
                                                     fontSize = 20.sp,
