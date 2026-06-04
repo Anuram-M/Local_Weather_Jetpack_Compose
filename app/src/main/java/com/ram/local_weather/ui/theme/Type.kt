@@ -1,19 +1,36 @@
 package com.ram.local_weather.ui.theme
 
 import androidx.compose.material3.Typography
+import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.ram.local_weather.R
 
 // Set of Material typography styles to start with
 
+@OptIn(ExperimentalTextApi::class)
 val poppinsFont = FontFamily(
-    Font(R.font.poppins_regular, FontWeight.Normal),
-    Font(R.font.poppins_semibold, FontWeight.SemiBold),
-    Font(R.font.poppins_bold, FontWeight.Bold),
+    Font(
+        resId = R.font.rubik_variable,
+        weight = FontWeight.Normal,
+        variationSettings = FontVariation.Settings(
+        FontVariation.weight(FontWeight.Normal.weight)
+    )),Font(
+        resId = R.font.rubik_variable,
+        weight = FontWeight.SemiBold,
+        variationSettings = FontVariation.Settings(
+        FontVariation.Setting("wght", 600F)
+    )),
+    Font(
+        resId = R.font.rubik_variable,
+        weight = FontWeight.Bold,
+        variationSettings = FontVariation.Settings(
+        FontVariation.Setting("wght", 800F)
+    )),
 )
 
 val Typography = Typography(

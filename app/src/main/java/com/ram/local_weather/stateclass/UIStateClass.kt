@@ -1,4 +1,4 @@
-package com.ram.local_weather
+package com.ram.local_weather.stateclass
 
 import com.ram.core_database.dto.MappedForecast
 import com.ram.core_database.dto.MappedWeather

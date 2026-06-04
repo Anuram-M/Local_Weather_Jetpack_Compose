@@ -23,6 +23,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -30,6 +31,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
@@ -47,6 +49,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -58,9 +61,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -69,6 +74,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -150,14 +156,14 @@ fun WeatherHomeComposable(
     val refreshCount by locationViewModel.refreshCount
     val initialLocationEnabled = checkerUtil.checkLocationEnabled()    // one call
 
-    var mainBg by remember {
-        mutableStateOf(Color.Gray)
+    var mainBg by rememberSaveable {
+        mutableStateOf(801)
     }
-    var isDay by remember {
+    var isDay by rememberSaveable {
         mutableStateOf(true)
     }
     val animatedBackground by animateColorAsState(
-        targetValue = mainBg,
+        targetValue = BackgroundSelectorUtil().backgroundChoice(mainBg),
         animationSpec = tween(2000)
     )
     val animatedDayAccent by animateColorAsState(
@@ -195,36 +201,50 @@ fun WeatherHomeComposable(
         onDispose { context.unregisterReceiver(receiver) }
     }
 
+//
+//    LaunchedEffect(weatherUIState.weatherData, weatherUIState.searchWeather) {
+//        if (weatherUIState.weatherData != null) {
+//            Log.d("CATECATE", "WeatherHomeComposable: weather check")
+//            isRefreshing = false
+//            isDay = weatherUIState.weatherData?.icon?.endsWith('d') == true
+//            mainBg = BackgroundSelectorUtil().backgroundChoice(weatherUIState.weatherData?.weatherCategory!!)
+//        }
+//        if (weatherUIState.searchWeather != null) {
+//            Log.d("CATECATE", "WeatherHomeComposable: search weather check")
+//            isDay = weatherUIState.searchWeather?.icon?.endsWith('d') == true
+////            animationWidget = weatherUIState.searchWeather?.main
+//            mainBg = BackgroundSelectorUtil().backgroundChoice(weatherUIState.searchWeather?.weatherCategory!!)
+//        }
+//    }
 
-    LaunchedEffect(weatherUIState.weatherData) {
-        if (weatherUIState.weatherData != null) {
-            isRefreshing = false
-            isDay = weatherUIState.weatherData?.icon?.endsWith('d') == true
-            mainBg = BackgroundSelectorUtil().backgroundChoice(weatherUIState.weatherData?.weatherCategory!!)
-        }
-    }
-
-    LaunchedEffect(weatherUIState.searchWeather) {
-        if (weatherUIState.searchWeather != null) {
-            isDay = weatherUIState.searchWeather?.icon?.endsWith('d') == true
-//            animationWidget = weatherUIState.searchWeather?.main
-            mainBg = BackgroundSelectorUtil().backgroundChoice(weatherUIState.searchWeather?.weatherCategory!!)
-        }
-        if (weatherUIState.searchWeather == null && weatherUIState.weatherData != null) {
-//            animationWidget = weatherData?.weather!![0].main
-            isDay = weatherUIState.weatherData?.icon?.endsWith('d') == true
-            mainBg = BackgroundSelectorUtil().backgroundChoice(weatherUIState.weatherData?.weatherCategory!!)
-        }
-    }
+//    LaunchedEffect(weatherUIState.searchWeather) {
+//
+////        if (weatherUIState.searchWeather == null && weatherUIState.weatherData != null) {
+//////            animationWidget = weatherData?.weather!![0].main
+////            isDay = weatherUIState.weatherData?.icon?.endsWith('d') == true
+////            mainBg = BackgroundSelectorUtil().backgroundChoice(weatherUIState.weatherData?.weatherCategory!!)
+////        }
+//    }
 
     LaunchedEffect(refreshCount) {
-        weatherUIState.weatherData?.let {
-//            if (searchWeatherData == null) {
-////                animationWidget = weatherData?.weather!![0].main
-//            }
+        if(weatherUIState.searchWeather != null) {
+            isDay = weatherUIState.searchWeather?.icon?.endsWith('d') == true
+            mainBg = weatherUIState.searchWeather?.weatherCategory!!
+//                BackgroundSelectorUtil().backgroundChoice(weatherUIState.searchWeather?.weatherCategory!!)
+        } else if(weatherUIState.weatherData != null) {
             isDay = weatherUIState.weatherData?.icon?.endsWith('d') == true
-            mainBg = BackgroundSelectorUtil().backgroundChoice(weatherUIState.weatherData?.weatherCategory!!)
+            mainBg = weatherUIState.weatherData?.weatherCategory!!
+//                BackgroundSelectorUtil().backgroundChoice(weatherUIState.weatherData?.weatherCategory!!)
+        } else {
+
         }
+//        weatherUIState.weatherData?.let {
+////            if (searchWeatherData == null) {
+//////                animationWidget = weatherData?.weather!![0].main
+////            }
+//            isDay = weatherUIState.weatherData?.icon?.endsWith('d') == true
+//            mainBg = BackgroundSelectorUtil().backgroundChoice(weatherUIState.weatherData?.weatherCategory!!)
+//        }
     }
 
 //    LaunchedEffect(Unit) {
@@ -236,9 +256,24 @@ fun WeatherHomeComposable(
 //    }
 
 
+//    val linearGradient = rememberSaveable {
+//        Brush.linearGradient(
+//            colors = listOf(animatedBackground, animatedDayAccent),
+//            start = Offset(0f, 0f),
+//            end = Offset(0f, Float.POSITIVE_INFINITY)
+//        )
+//    }
+    var query by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue(""))
+    }
+
+    var expand by remember {
+        mutableStateOf(false)
+    }
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
+                modifier = Modifier.safeContentPadding(),
                 containerColor = Color.White,
                 shape = CircleShape,
                 onClick = {
@@ -259,14 +294,15 @@ fun WeatherHomeComposable(
         }
 
     ) { innerPadding ->
-        Log.d("BDC", "WeatherHomeComposable: ${mainBg.value}, ${isDay}")
         Box(modifier = Modifier.fillMaxSize()) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(
                         brush = Brush.linearGradient(
-                            colors = listOf(animatedBackground, animatedDayAccent)
+                            colors = listOf(animatedBackground, animatedDayAccent),
+                            start = Offset(0f, 0f),
+                            end = Offset(0f, Float.POSITIVE_INFINITY)
                         )
                     )
             )
@@ -287,13 +323,8 @@ fun WeatherHomeComposable(
 //                )
 //            }
 //        }
-            var query by remember {
-                mutableStateOf("")
-            }
-            var expand by remember {
-                mutableStateOf(false)
-            }
-            Column(modifier = Modifier.systemBarsPadding()) {
+
+            Column(modifier = Modifier.safeContentPadding()) {
                 Row(
                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -305,12 +336,13 @@ fun WeatherHomeComposable(
                             .weight(1f)
                     ) {
                         NewSearchBar(
-                            query = query,
-                            onQueryChange = { query = it },
+                            query = query.text,
+                            onQueryChange = { query = TextFieldValue(it) },
                             expanded = expand,
                             onExpandChange = { expand = !expand },
                             locationViewModel,
                             onClear = {
+                                query = TextFieldValue("")
                                 locationViewModel.resetSearchWeather()
                                 locationViewModel.getLocationUpdates(context)
                             },
@@ -409,7 +441,8 @@ fun WeatherHomeComposable(
                                             style = TextStyle(
                                                 fontSize = 18.sp,
                                                 color = Color.Black,
-                                                fontWeight = FontWeight.Bold
+                                                fontFamily = poppinsFont,
+                                                fontWeight = FontWeight.W800
                                             )
                                         )
                                     }
@@ -441,12 +474,21 @@ fun WeatherHomeComposable(
                                     AnimatedVisibility(
                                         visible = weatherUIState.forecastData != null,
                                     ) {
+//                                        FlowRow(
+//                                            modifier = Modifier.fillMaxWidth().padding(horizontal = 5.dp),
+//                                            maxItemsInEachRow = 2,
+////                                            horizontalArrangement = Arrangement.SpaceBetween
+//                                        ) {
+//                                            weatherUIState.forecastData!!.forEach { item ->
+//                                                ForecastItemComposable(item, poppinsFont, Modifier.weight(1f))
+//                                            }
+//                                        }
                                         LazyRow(
                                             modifier = Modifier
                                                 .padding(horizontal = 5.dp)
                                         ) {
                                             items(weatherUIState.forecastData!!) { item ->
-                                                ForecastItemComposable(item, poppinsFont)
+                                                ForecastItemComposable(item, poppinsFont, Modifier.weight(1f))
                                             }
                                         }
                                     }
@@ -454,8 +496,8 @@ fun WeatherHomeComposable(
                             }
                         }
 
-                        !weatherUIState.isCurrent -> {
-                            QueryLocationWeatherComposable(weatherUIState.searchWeather)
+                        !weatherUIState.isCurrent && weatherUIState.searchWeather!=null -> {
+                            QueryLocationWeatherComposable(weatherUIState.searchWeather!!)
                         }
                         else -> {
                             Box(
@@ -493,7 +535,7 @@ fun LocalityCard(pair: Pair<String?, String?>, customFont: FontFamily) {
                     it,
                     fontSize = 20.sp,
                     color = Color.Black,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.SemiBold,
                     fontFamily = customFont
                 )
             }
@@ -506,7 +548,7 @@ fun LocalityCard(pair: Pair<String?, String?>, customFont: FontFamily) {
                     it,
                     fontSize = 24.sp,
                     color = Color.Black,
-                    fontWeight = FontWeight.Normal,
+                    fontWeight = FontWeight.SemiBold,
                     fontFamily = customFont
                 )
             }
@@ -523,10 +565,9 @@ fun WeatherDataCard(weatherData: MappedWeather, textColor: Color, spFont: FontFa
             verticalArrangement = Arrangement.Center
         ) {
             Row(
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(vertical = 2.dp)
-            ) {
+                modifier = Modifier.padding(vertical = 2.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,) {
                 AsyncImage(
                     modifier = Modifier
                         .width(100.dp)
@@ -535,22 +576,30 @@ fun WeatherDataCard(weatherData: MappedWeather, textColor: Color, spFont: FontFa
                     contentDescription = "Weather Icon",
                     contentScale = ContentScale.Crop
                 )
-                Column(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .weight(1f),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        "${weatherData.mainTemp.toInt()}ºC",
-                        fontSize = 60.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = textColor,
-                        modifier = Modifier.padding(horizontal = 10.dp),
-                        fontFamily = spFont
-                    )
-                }
+                Text(
+                    "${weatherData.mainTemp.toInt()}ºC",
+                    fontSize = 57.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = textColor,
+                    modifier = Modifier.padding(horizontal = 10.dp),
+                    fontFamily = spFont
+                )
+//                Column(
+//                    modifier = Modifier
+//                        .fillMaxHeight()
+//                        .weight(1f),
+//                    verticalArrangement = Arrangement.Center,
+//                    horizontalAlignment = Alignment.CenterHorizontally
+//                ) {
+//                    Text(
+//                        "${weatherData.mainTemp.toInt()}ºC",
+//                        fontSize = 57.sp,
+//                        fontWeight = FontWeight.Bold,
+//                        color = textColor,
+//                        modifier = Modifier.padding(horizontal = 10.dp),
+//                        fontFamily = spFont
+//                    )
+//                }
             }
 
             Text(
@@ -585,7 +634,7 @@ fun WeatherDataCard(weatherData: MappedWeather, textColor: Color, spFont: FontFa
                             text = "Low ↓",
                             fontSize = 14.sp,
                             color = textColor,
-                            fontWeight = FontWeight.Bold,
+                            fontWeight = FontWeight.SemiBold,
                             fontFamily = spFont
                         )
                         Text(
@@ -616,7 +665,7 @@ fun WeatherDataCard(weatherData: MappedWeather, textColor: Color, spFont: FontFa
                             text = "High ↑",
                             fontSize = 14.sp,
                             color = textColor,
-                            fontWeight = FontWeight.Bold,
+                            fontWeight = FontWeight.SemiBold,
                             fontFamily = spFont
                         )
                         Text(
@@ -631,7 +680,7 @@ fun WeatherDataCard(weatherData: MappedWeather, textColor: Color, spFont: FontFa
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 25.dp),
+                    .padding(top = 10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Box(
@@ -649,7 +698,7 @@ fun WeatherDataCard(weatherData: MappedWeather, textColor: Color, spFont: FontFa
                             text = "Humidity",
                             fontSize = 14.sp,
                             color = textColor,
-                            fontWeight = FontWeight.Bold,
+                            fontWeight = FontWeight.SemiBold,
                             fontFamily = spFont
                         )
                         Text(
@@ -676,7 +725,7 @@ fun WeatherDataCard(weatherData: MappedWeather, textColor: Color, spFont: FontFa
                             text = "Wind",
                             fontSize = 14.sp,
                             color = textColor,
-                            fontWeight = FontWeight.Bold,
+                            fontWeight = FontWeight.SemiBold,
                             fontFamily = spFont
                         )
                         Text(

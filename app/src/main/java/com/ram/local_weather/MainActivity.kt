@@ -1,22 +1,16 @@
  package com.ram.local_weather
 
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.content.Context
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.compose.ui.util.trace
+import androidx.navigation.compose.rememberNavController
 import com.ram.local_weather.screens.WeatherHomeScreen
 import com.ram.local_weather.ui.theme.LocalWeatherTheme
 import dagger.hilt.android.AndroidEntryPoint
-import kotlin.math.abs
-import kotlin.math.pow
 
  @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -29,7 +23,8 @@ class MainActivity : ComponentActivity() {
             setContent {
                 trace("setContent") {
                     LocalWeatherTheme {
-                        WeatherHomeScreen()
+                        val navController = rememberNavController()
+                        WeatherHomeScreen(navController)
                     }
                 }
             }

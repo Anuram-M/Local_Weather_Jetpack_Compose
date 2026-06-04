@@ -25,13 +25,13 @@ import com.ram.local_weather.util.DateConvertor
 import kotlin.math.round
 
 @Composable
-fun ForecastItemComposable(forecastItem: MappedForecast, spFont: FontFamily) {
+fun ForecastItemComposable(forecastItem: MappedForecast, spFont: FontFamily, modifier: Modifier) {
     val time = DateConvertor().getDateAndTime(forecastItem.dateInMillis).second
     val date = DateConvertor().getDayLabel(forecastItem.dateInMillis)
     val textColor = Color.Black
     Card(
-        modifier = Modifier
-            .width(150.dp)
+        modifier = modifier
+//            .width(150.dp)
             .padding(10.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 5.dp,),
         colors = CardDefaults.cardColors(containerColor = Color(0xFFE0E0E0))
@@ -41,7 +41,7 @@ fun ForecastItemComposable(forecastItem: MappedForecast, spFont: FontFamily) {
             verticalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(5.dp)
+                .padding(horizontal = 20.dp, vertical = 12.dp)
         ) {
             Text(
                 round(forecastItem.temp).toInt().toString() + "º C",
@@ -54,7 +54,7 @@ fun ForecastItemComposable(forecastItem: MappedForecast, spFont: FontFamily) {
                 model = "https://openweathermap.org/img/wn/${forecastItem.icon}@2x.png",
                 contentDescription = "",
                 contentScale = ContentScale.Fit,
-                modifier = Modifier.size(75.dp)
+                modifier = Modifier.size(60.dp)
             )
 
             Text(
@@ -62,12 +62,11 @@ fun ForecastItemComposable(forecastItem: MappedForecast, spFont: FontFamily) {
                 fontSize = 14.sp,
                 color = textColor,
                 fontFamily = spFont,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.SemiBold
             )
             Text(
                 time,
                 fontSize = 14.sp,
-//                modifier = Modifier.padding(bottom = 10.dp),
                 color = textColor,
                 fontFamily = spFont
             )
