@@ -6,12 +6,11 @@ import org.junit.Before
 import org.junit.Test
 
 class DateConvertorTest {
-    lateinit var dateConvertor: DateConvertor
+    val dateConvertor = DateConvertor
 
     //2025-11-05T12:36:17 = 1762326377
     @Before
     fun setUp() {
-        dateConvertor = DateConvertor()
     }
 
     @After

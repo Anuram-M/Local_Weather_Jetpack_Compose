@@ -295,7 +295,7 @@ fun SearchLocalityCard(weatherData: MappedWeather?,textColor: Color, spFont: Fon
                 contentScale = ContentScale.Fit
             )
             Text(
-                round(weatherData!!.mainTemp).toInt().toString() + "º C",
+                round(weatherData!!.mainTemp).toInt().toString() + " ℃",
                 fontSize = 57.sp,
                 fontWeight = FontWeight.Bold,
                 color = textColor,

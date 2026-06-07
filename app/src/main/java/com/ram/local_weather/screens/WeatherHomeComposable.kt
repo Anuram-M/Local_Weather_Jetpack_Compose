@@ -35,6 +35,7 @@ import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -44,10 +45,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -103,12 +106,6 @@ fun WeatherHomeComposable(
     locationViewModel: LocationViewModel,
     navController: NavHostController
 ) {
-    // 1. Declare a static class wrapper or an anonymous object tracker
-    val tracker = remember { object { var count = 0 } }
-    tracker.count++
-
-    // Log directly during composition execution
-    Log.d("COMPOSE", "WeatherScreen recomposed: ${tracker.count}")
     val context = LocalContext.current.applicationContext
 
     val checkerUtil by remember {
@@ -201,31 +198,6 @@ fun WeatherHomeComposable(
         onDispose { context.unregisterReceiver(receiver) }
     }
 
-//
-//    LaunchedEffect(weatherUIState.weatherData, weatherUIState.searchWeather) {
-//        if (weatherUIState.weatherData != null) {
-//            Log.d("CATECATE", "WeatherHomeComposable: weather check")
-//            isRefreshing = false
-//            isDay = weatherUIState.weatherData?.icon?.endsWith('d') == true
-//            mainBg = BackgroundSelectorUtil().backgroundChoice(weatherUIState.weatherData?.weatherCategory!!)
-//        }
-//        if (weatherUIState.searchWeather != null) {
-//            Log.d("CATECATE", "WeatherHomeComposable: search weather check")
-//            isDay = weatherUIState.searchWeather?.icon?.endsWith('d') == true
-////            animationWidget = weatherUIState.searchWeather?.main
-//            mainBg = BackgroundSelectorUtil().backgroundChoice(weatherUIState.searchWeather?.weatherCategory!!)
-//        }
-//    }
-
-//    LaunchedEffect(weatherUIState.searchWeather) {
-//
-////        if (weatherUIState.searchWeather == null && weatherUIState.weatherData != null) {
-//////            animationWidget = weatherData?.weather!![0].main
-////            isDay = weatherUIState.weatherData?.icon?.endsWith('d') == true
-////            mainBg = BackgroundSelectorUtil().backgroundChoice(weatherUIState.weatherData?.weatherCategory!!)
-////        }
-//    }
-
     LaunchedEffect(refreshCount) {
         if(weatherUIState.searchWeather != null) {
             isDay = weatherUIState.searchWeather?.icon?.endsWith('d') == true
@@ -235,16 +207,7 @@ fun WeatherHomeComposable(
             isDay = weatherUIState.weatherData?.icon?.endsWith('d') == true
             mainBg = weatherUIState.weatherData?.weatherCategory!!
 //                BackgroundSelectorUtil().backgroundChoice(weatherUIState.weatherData?.weatherCategory!!)
-        } else {
-
         }
-//        weatherUIState.weatherData?.let {
-////            if (searchWeatherData == null) {
-//////                animationWidget = weatherData?.weather!![0].main
-////            }
-//            isDay = weatherUIState.weatherData?.icon?.endsWith('d') == true
-//            mainBg = BackgroundSelectorUtil().backgroundChoice(weatherUIState.weatherData?.weatherCategory!!)
-//        }
     }
 
 //    LaunchedEffect(Unit) {
@@ -255,14 +218,6 @@ fun WeatherHomeComposable(
 //            .enqueueUniquePeriodicWork("UNiq", ExistingPeriodicWorkPolicy.KEEP, workRequest)
 //    }
 
-
-//    val linearGradient = rememberSaveable {
-//        Brush.linearGradient(
-//            colors = listOf(animatedBackground, animatedDayAccent),
-//            start = Offset(0f, 0f),
-//            end = Offset(0f, Float.POSITIVE_INFINITY)
-//        )
-//    }
     var query by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue(""))
     }
@@ -270,6 +225,7 @@ fun WeatherHomeComposable(
     var expand by remember {
         mutableStateOf(false)
     }
+
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
@@ -433,19 +389,6 @@ fun WeatherHomeComposable(
                                         .verticalScroll(rememberScrollState()),
                                     verticalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    if(!checkerUtil.checkLocationEnabled()) {
-                                        Text(
-                                            text = "Not Live",
-                                            modifier = Modifier.fillMaxWidth(),
-                                            textAlign = TextAlign.Center,
-                                            style = TextStyle(
-                                                fontSize = 18.sp,
-                                                color = Color.Black,
-                                                fontFamily = poppinsFont,
-                                                fontWeight = FontWeight.W800
-                                            )
-                                        )
-                                    }
                                     Card(
                                         modifier = Modifier
                                             .padding(10.dp),
@@ -454,6 +397,28 @@ fun WeatherHomeComposable(
                                         ),
                                         elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
                                     ) {
+                                        Card(
+                                            colors = CardDefaults.cardColors(
+                                                containerColor = Color.Black
+                                            ),
+                                            modifier = Modifier.fillMaxWidth()
+                                                .wrapContentHeight(),
+                                            shape = RoundedCornerShape(topEnd = 10.dp, topStart = 10.dp, bottomEnd = 0.dp, bottomStart = 0.dp)
+                                        ) {
+                                            if(!checkerUtil.checkLocationEnabled()) {
+                                                Text(
+                                                    text = "Not Live",
+                                                    modifier = Modifier.fillMaxWidth().padding(4.dp),
+                                                    textAlign = TextAlign.Center,
+                                                    style = TextStyle(
+                                                        fontSize = 18.sp,
+                                                        color = Color.White,
+                                                        fontFamily = poppinsFont,
+                                                        fontWeight = FontWeight.Normal
+                                                    )
+                                                )
+                                            }
+                                        }
                                         Column(
                                             modifier = Modifier
                                                 .fillMaxWidth()
@@ -577,29 +542,13 @@ fun WeatherDataCard(weatherData: MappedWeather, textColor: Color, spFont: FontFa
                     contentScale = ContentScale.Crop
                 )
                 Text(
-                    "${weatherData.mainTemp.toInt()}ºC",
+                    "${weatherData.mainTemp.toInt()} ℃",
                     fontSize = 57.sp,
                     fontWeight = FontWeight.Bold,
                     color = textColor,
                     modifier = Modifier.padding(horizontal = 10.dp),
                     fontFamily = spFont
                 )
-//                Column(
-//                    modifier = Modifier
-//                        .fillMaxHeight()
-//                        .weight(1f),
-//                    verticalArrangement = Arrangement.Center,
-//                    horizontalAlignment = Alignment.CenterHorizontally
-//                ) {
-//                    Text(
-//                        "${weatherData.mainTemp.toInt()}ºC",
-//                        fontSize = 57.sp,
-//                        fontWeight = FontWeight.Bold,
-//                        color = textColor,
-//                        modifier = Modifier.padding(horizontal = 10.dp),
-//                        fontFamily = spFont
-//                    )
-//                }
             }
 
             Text(
@@ -638,7 +587,7 @@ fun WeatherDataCard(weatherData: MappedWeather, textColor: Color, spFont: FontFa
                             fontFamily = spFont
                         )
                         Text(
-                            text = "${weatherData.minTemp.toInt()}ºC",
+                            text = "${weatherData.minTemp} ºC",
                             fontSize = 14.sp,
                             color = textColor,
                             fontFamily = spFont
@@ -669,7 +618,7 @@ fun WeatherDataCard(weatherData: MappedWeather, textColor: Color, spFont: FontFa
                             fontFamily = spFont
                         )
                         Text(
-                            text = "${weatherData.maxTemp.toInt()}ºC",
+                            text = "${weatherData.maxTemp} ºC",
                             fontSize = 14.sp,
                             color = textColor,
                             fontFamily = spFont

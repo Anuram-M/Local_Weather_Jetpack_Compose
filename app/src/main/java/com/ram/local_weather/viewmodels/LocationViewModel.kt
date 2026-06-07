@@ -6,6 +6,7 @@ import android.location.Geocoder
 import android.location.Location
 import android.os.Build
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -15,10 +16,10 @@ import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.Priority
+import com.google.android.play.agesignals.AgeSignalsManager
+import com.google.android.play.agesignals.AgeSignalsRequest
 import com.ram.core_database.mapper.toMappedWeather
 import com.ram.core_database.dto.GPSandWeatherModel
-import com.ram.core_database.dto.MappedForecast
-import com.ram.core_database.dto.MappedWeather
 import com.ram.core_database.entity.CurrentWeatherAndForecast
 import com.ram.core_database.entity.WeatherHistory
 import com.ram.core_database.mapper.toMappedForecast
@@ -31,7 +32,6 @@ import com.ram.core_domain.usecase.GetForecastUseCase
 import com.ram.core_domain.usecase.GetLocationDataUseCase
 import com.ram.core_domain.usecase.GetWeatherUseCase
 import com.ram.core_firebase.repository.FirestoreRepository
-import com.ram.local_weather.UILOGIC_STATE
 import com.ram.local_weather.stateclass.NavStateClass
 import com.ram.local_weather.stateclass.UIStateClass
 import com.ram.local_weather.util.CheckerUtil
@@ -65,13 +65,11 @@ class LocationViewModel @Inject constructor(
     private val checkerUtil: CheckerUtil,
     private val currentWeatherRepository: CurrentWeatherAndForecastRepository,
     private val weatherHistoryRepository: WeatherHistoryRepository,
-    private val firebaserepository: FirestoreRepository
+    private val firebaserepository: FirestoreRepository,
+    private val ageSignalsManager: AgeSignalsManager
 ) : ViewModel() {
 
     private var _permissionGranted = false
-
-    private var _historyData = MutableStateFlow<List<WeatherHistory>?>(null)
-    val historyData = _historyData.asStateFlow()
 
     private var lastExecutedTime: Long? = null
 
@@ -79,9 +77,6 @@ class LocationViewModel @Inject constructor(
 
     private var _weatherDataUI = MutableStateFlow(UIStateClass())
     val weatherDataUI = _weatherDataUI.asStateFlow()
-
-    private var _uiState = MutableStateFlow<UILOGIC_STATE>(UILOGIC_STATE.LOGIC_LOADING)
-    val uiLogicState = _uiState.asStateFlow()
 
     var _refreshCount = mutableStateOf(0)
     val refreshCount = _refreshCount
@@ -93,72 +88,91 @@ class LocationViewModel @Inject constructor(
             initialValue = emptyList()
         )
 
+    val historyData = weatherHistoryRepository.fetchHistory().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(3000),
+        initialValue = emptyList()
+    )
+
     var _navState = Channel<NavStateClass>(Channel.BUFFERED)
     val navEvents = _navState.receiveAsFlow()
 
+    private var lastProcessedLocation: Location? = null
+
     init {
         fetchData()
-        fetchHistory()
         lastExecutedTime = null
-        checkAppState()
+        initializeAgeSignalManager()
     }
 
+    fun initializeAgeSignalManager() {
+        ageSignalsManager.checkAgeSignals(AgeSignalsRequest.builder().build())
+            .addOnSuccessListener { status ->
+                if (status.userStatus() == null) {
+                    checkAppState()
+                }
+            }
+
+//        val fakeManager = FakeAgeSignalsManager()
+//
+//        // 2. Mock a simulated Texas minor who has been DENIED parental approval
+//        val mockTexasBlockedUser = AgeSignalsResult.builder()
+//            .setUserStatus(AgeSignalsVerificationStatus.SUPERVISED_APPROVAL_DENIED)
+//            .setAgeLower(13)
+//            .setAgeUpper(17)
+//            .build()
+//
+//        // 3. Inject the fake result state into the manager's queue
+//        fakeManager.setNextAgeSignalsResult(mockTexasBlockedUser)
+//
+//        // 4. Run the check (it will immediately intercept and return your mock user)
+//        fakeManager.checkAgeSignals(AgeSignalsRequest.builder().build())
+//            .addOnSuccessListener { result ->
+//                Log.d("AGELIST", "checkAppState: ${result.userStatus()}")
+//            }
+    }
 
     private fun fetchData() {
         viewModelScope.launch(Dispatchers.IO) {
             val data = currentWeatherRepository.fetchData().firstOrNull()
             data?.let {
                 _weatherDataUI.update {
-                    it.copy(isLoading = false, isCurrent = true, weatherData = data.weather, forecastData = data.forecast)
+                    it.copy(
+                        isLoading = false,
+                        isCurrent = true,
+                        weatherData = data.weather,
+                        forecastData = data.forecast
+                    )
                 }
             }
         }
     }
 
-    fun fetchHistory() {
-        viewModelScope.launch(Dispatchers.IO) {
-            //            launch(Dispatchers.IO) {
-            weatherHistoryRepository.fetchHistory().collect {
-                _historyData.value = it
-                Log.d("HISTHIST", "fetchData: ${_historyData.value}")
-            }
-//            }
-        }
-    }
-
-
-    fun checkAppState(): UILOGIC_STATE {
+    fun checkAppState() {
         viewModelScope.launch {
             val newState = withContext(Dispatchers.IO) {
                 val locationPermissionGranted = checkerUtil.checkLocationPermission()
                 val locationPermissionAsked = SharedPrefUtil.getBoolean(
                     PREF_KEYS.PERMISSION_ALREADY_ASKED.name
                 )
-
                 if (!locationPermissionGranted && !locationPermissionAsked) {
                     SharedPrefUtil.saveBoolean(
                         PREF_KEYS.PERMISSION_ALREADY_ASKED.name, true
                     )
-//                    return@withContext UILOGIC_STATE.LOGIC_PERMISSION_NEEDED
                     return@withContext NavStateClass.NavigateToPermission
                 }
-
                 val gpsEnabled = checkerUtil.checkLocationEnabled()
                 val enableGPSShown = SharedPrefUtil.getBoolean(PREF_KEYS.ALREADY_SHOWN.name)
                 if (locationPermissionGranted && !enableGPSShown && !gpsEnabled) {
                     stopLocationUpdate()
                     SharedPrefUtil.saveBoolean(PREF_KEYS.ALREADY_SHOWN.name, true)
-//                    return@withContext UILOGIC_STATE.LOGIC_LOCATION_NEEDED
                     return@withContext NavStateClass.NavigateToGPS
                 }
                 SharedPrefUtil.saveBoolean(PREF_KEYS.ALREADY_SHOWN.name, true)
-//                UILOGIC_STATE.LOGIC_APP_READY
                 NavStateClass.NavigateToHome
             }
             triggerNavigation(newState)
-//            _uiState.value = newState
         }
-        return _uiState.value
     }
 
     fun triggerNavigation(event: NavStateClass) {
@@ -166,27 +180,22 @@ class LocationViewModel @Inject constructor(
             _navState.send(event)
         }
     }
+
     fun updateLoading(currentStatus: Boolean) {
         _weatherDataUI.update { it.copy(isLoading = currentStatus) }
     }
 
-    private var lastProcessedLocation: Location? = null
 
     @SuppressLint("MissingPermission")
     fun getLocationUpdates(context: Context) {
-
         if (!_permissionGranted) {
             return
         }
-
-        if (!checkerUtil.checkLocationEnabled()) {
+        if (!checkerUtil.checkLocationEnabled() || _weatherDataUI.value.searchWeather != null) {
             updateLoading(false)
-//        } else {
             return
         }
-
         stopLocationUpdate()
-
         val request = LocationRequest.Builder(
             Priority.PRIORITY_HIGH_ACCURACY,
             20000L
@@ -207,7 +216,6 @@ class LocationViewModel @Inject constructor(
                 }
             }
         }
-
         fusedLocationProviderClient.requestLocationUpdates(
             request,
             Executors.newSingleThreadExecutor(),
@@ -265,10 +273,8 @@ class LocationViewModel @Inject constructor(
                         address.longitude
                     )
                 }
-
                 val weatherResult = weatherData.await()
                 val forecastResult = forecastData.await()
-
                 if (weatherResult is NETWORK_RESULT.Success && forecastResult is NETWORK_RESULT.Success) {
                     val currentWeather = GPSandWeatherModel(
                         subLocality = address.subLocality,
@@ -312,12 +318,10 @@ class LocationViewModel @Inject constructor(
 
     fun canExecuteFunction(): Boolean {
         val currentTime = System.currentTimeMillis()
-
         if (lastExecutedTime == null) {
             lastExecutedTime = currentTime
             return true
         }
-
         val diff = currentTime - lastExecutedTime!!
         if (diff > 60000) {
             lastExecutedTime = currentTime
@@ -347,9 +351,15 @@ class LocationViewModel @Inject constructor(
                     )
                 )
                 _refreshCount.value += 1
-                _weatherDataUI.update { it.copy(isLoading = false, searchWeather = mappedWeather, error = null) }
-            } else if(searchResult is NETWORK_RESULT.Error){
-                _weatherDataUI.update { it.copy(isLoading = false, error = searchResult.message,) }
+                _weatherDataUI.update {
+                    it.copy(
+                        isLoading = false,
+                        searchWeather = mappedWeather,
+                        error = null
+                    )
+                }
+            } else if (searchResult is NETWORK_RESULT.Error) {
+                _weatherDataUI.update { it.copy(isLoading = false, error = searchResult.message) }
             }
         }
     }

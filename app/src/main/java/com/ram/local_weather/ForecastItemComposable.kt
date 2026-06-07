@@ -26,8 +26,8 @@ import kotlin.math.round
 
 @Composable
 fun ForecastItemComposable(forecastItem: MappedForecast, spFont: FontFamily, modifier: Modifier) {
-    val time = DateConvertor().getDateAndTime(forecastItem.dateInMillis).second
-    val date = DateConvertor().getDayLabel(forecastItem.dateInMillis)
+    val time = DateConvertor.getDateAndTime(forecastItem.dateInMillis).second
+    val date = DateConvertor.getDayLabel(forecastItem.dateInMillis)
     val textColor = Color.Black
     Card(
         modifier = modifier
@@ -44,7 +44,7 @@ fun ForecastItemComposable(forecastItem: MappedForecast, spFont: FontFamily, mod
                 .padding(horizontal = 20.dp, vertical = 12.dp)
         ) {
             Text(
-                round(forecastItem.temp).toInt().toString() + "º C",
+                round(forecastItem.temp).toInt().toString() + " ℃",
                 fontSize = 24.sp,
                 modifier = Modifier.padding(5.dp),
                 color = textColor,

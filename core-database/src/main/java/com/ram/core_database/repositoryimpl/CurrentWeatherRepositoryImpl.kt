@@ -14,11 +14,11 @@ class CurrentWeatherRepositoryImpl @Inject constructor() : CurrentWeatherAndFore
     @Inject
     lateinit var db: MyDatabase
 
-    override fun insertData(currentWeather: CurrentWeatherAndForecast) {
+    override suspend fun insertData(currentWeather: CurrentWeatherAndForecast) {
        db.weatherDao().insertWeatherAndForecast(currentWeather)
     }
 
-    override fun fetchData(): Flow<CurrentWeatherAndForecast?> = flow {
-        emit(db.weatherDao().fetchCurrentData())
-    }.flowOn(Dispatchers.IO)
+    override fun fetchData(): Flow<CurrentWeatherAndForecast?> {
+        return db.weatherDao().fetchCurrentData()
+    }
 }

@@ -11,7 +11,6 @@ import com.ram.core_domain.usecase.GetForecastUseCase
 import com.ram.core_domain.usecase.GetLocationDataUseCase
 import com.ram.core_domain.usecase.GetWeatherUseCase
 import com.ram.core_network.WeatherRepositoryImpl
-import com.ram.local_weather.UILOGIC_STATE
 import com.ram.local_weather.util.CheckerUtil
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest

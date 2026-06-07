@@ -14,11 +14,11 @@ class WeatherHistoryRepositoryImpl @Inject constructor(): WeatherHistoryReposito
     @Inject
     lateinit var db: MyDatabase
 
-    override fun insertWeather(weatherHistory: WeatherHistory) {
+    override suspend fun insertWeather(weatherHistory: WeatherHistory) {
         db.weatherHistoryDao().insertHistory(weatherHistory)
     }
 
-    override fun fetchHistory(): Flow<List<WeatherHistory>> = flow {
-        emit(db.weatherHistoryDao().getHistory())
-    }.flowOn(Dispatchers.IO)
+    override fun fetchHistory(): Flow<List<WeatherHistory>> {
+        return db.weatherHistoryDao().getHistory()
+    }
 }
