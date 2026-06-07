@@ -4,6 +4,6 @@ import com.ram.core_database.entity.WeatherHistory
 import kotlinx.coroutines.flow.Flow
 
 interface WeatherHistoryRepository {
-    fun insertWeather(weatherHistory: WeatherHistory)
+    suspend fun insertWeather(weatherHistory: WeatherHistory)
     fun fetchHistory(): Flow<List<WeatherHistory>>
 }

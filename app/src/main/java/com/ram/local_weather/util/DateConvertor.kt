@@ -5,31 +5,36 @@ import android.util.Log
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
+import java.util.Locale
 
-class DateConvertor {
+object DateConvertor {
 
-    fun convertEpoch(epoch: Long) : LocalDateTime {
+    fun convertEpoch(epoch: Long): LocalDateTime {
         return LocalDateTime.ofInstant(Instant.ofEpochSecond(epoch), ZoneId.of("Asia/Kolkata"))
     }
 
-    fun getDayLabel(epoch: Long) : String {
+    fun getDayLabel(epoch: Long): String {
         val dateTime = convertEpoch(epoch).toLocalDate()
         val today = LocalDateTime.now().toLocalDate()
         val tomorrow = today.plusDays(1)
 
-       return when(dateTime) {
+        return when (dateTime) {
             today -> "Today"
             tomorrow -> "Tomorrow"
             else -> getMonthAndDate(epoch)
         }
     }
 
-    fun getDateAndTime(epoch: Long) : Pair<String, String> {
+    fun getDateAndTime(epoch: Long): Pair<String, String> {
         val dateTime = convertEpoch(epoch)
 
-        val dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy").withZone(ZoneId.of("Asia/Kolkata"))
-        val timeFormatter = DateTimeFormatter.ofPattern("hh-mm a").withZone(ZoneId.of("Asia/Kolkata"))
+        val dateFormatter =
+            DateTimeFormatter.ofPattern("dd-MM-yyyy").withZone(ZoneId.of("Asia/Kolkata"))
+        val timeFormatter =
+            DateTimeFormatter.ofPattern("hh-mm a").withZone(ZoneId.of("Asia/Kolkata"))
 
         val dateValue = dateFormatter.format(dateTime)
         val timeValue = timeFormatter.format(dateTime)
@@ -37,17 +42,18 @@ class DateConvertor {
         return Pair(dateValue, timeValue)
     }
 
-    fun getMonthAndDate(epoch: Long) : String {
+    fun getMonthAndDate(epoch: Long): String {
         val dateTime = convertEpoch(epoch)
-        val dateFormatter = DateTimeFormatter.ofPattern("MMM dd").withZone(ZoneId.of("Asia/Kolkata"))
+        val dateFormatter =
+            DateTimeFormatter.ofPattern("MMM dd").withZone(ZoneId.of("Asia/Kolkata"))
 
         return dateFormatter.format(dateTime)
     }
 
-    fun getExactMomentAgo(epoch: Long) : String  {
+    fun getExactMomentAgo(epoch: Long): String {
         val currentMilli = System.currentTimeMillis()
 
-        if(currentMilli < epoch + 59999) {
+        if (currentMilli < epoch + 59999) {
             return "Just Now"
         }
 
@@ -57,5 +63,19 @@ class DateConvertor {
             DateUtils.MINUTE_IN_MILLIS,
             DateUtils.FORMAT_ABBREV_RELATIVE
         ).toString()
+    }
+
+    fun getMonthGroup(epoch: Long): String {
+        val recordDate = ZonedDateTime.ofInstant(Instant.ofEpochMilli(epoch), ZoneId.systemDefault())
+        val currentDate = ZonedDateTime.now(ZoneId.systemDefault())
+        return when {
+            recordDate.year == currentDate.year && recordDate.month == currentDate.month -> {
+                "This Month"
+            }
+            else ->{
+                recordDate.month.getDisplayName(TextStyle.FULL, Locale.getDefault())
+//                ""
+            }
+        }
     }
 }

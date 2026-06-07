@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface CurrentWeatherAndForecastRepository {
 
-    fun insertData(currentWeather: CurrentWeatherAndForecast)
+    suspend fun insertData(currentWeather: CurrentWeatherAndForecast)
 
     fun fetchData(): Flow<CurrentWeatherAndForecast?>
 }

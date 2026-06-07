@@ -15,22 +15,17 @@ import com.ram.local_weather.R
 @OptIn(ExperimentalTextApi::class)
 val poppinsFont = FontFamily(
     Font(
-        resId = R.font.rubik_variable,
+        resId = R.font.poppins_regular,
         weight = FontWeight.Normal,
-        variationSettings = FontVariation.Settings(
-        FontVariation.weight(FontWeight.Normal.weight)
-    )),Font(
-        resId = R.font.rubik_variable,
-        weight = FontWeight.SemiBold,
-        variationSettings = FontVariation.Settings(
-        FontVariation.Setting("wght", 600F)
-    )),
+    ),
     Font(
-        resId = R.font.rubik_variable,
+        resId = R.font.poppins_semibold,
+        weight = FontWeight.SemiBold,
+    ),
+    Font(
+        resId = R.font.poppins_bold,
         weight = FontWeight.Bold,
-        variationSettings = FontVariation.Settings(
-        FontVariation.Setting("wght", 800F)
-    )),
+    ),
 )
 
 val Typography = Typography(

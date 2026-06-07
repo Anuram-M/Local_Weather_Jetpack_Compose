@@ -5,14 +5,17 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.ram.core_database.entity.WeatherHistory
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface WeatherHistoryDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertHistory(weatherHistory: WeatherHistory)
+    suspend fun insertHistory(weatherHistory: WeatherHistory)
 
     @Query("select * from weather_history order by lastChecked desc")
-    fun getHistory(): List<WeatherHistory>
+    fun getHistory(): Flow<List<WeatherHistory>>
 
+    @Query("delete from weather_history where lastChecked <:keepTime")
+    suspend fun deleteOldRecords(keepTime: Long)
 }

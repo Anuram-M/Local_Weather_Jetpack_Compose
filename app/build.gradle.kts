@@ -17,8 +17,8 @@ android {
         applicationId = "com.ram.local_weather"
         minSdk = 28
         targetSdk = 36
-        versionCode = 4
-        versionName = "1.3"
+        versionCode = 5
+        versionName = "1.4"
 
         testInstrumentationRunner = "com.ram.local_weather.CustomHiltTestRunner"
     }
@@ -117,6 +117,8 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     //work manager
     implementation("androidx.work:work-runtime-ktx:2.9.0")
+
+    implementation("com.google.android.play:age-signals:0.0.3")
 
     testImplementation(libs.junit)
     // Mockito core (required)

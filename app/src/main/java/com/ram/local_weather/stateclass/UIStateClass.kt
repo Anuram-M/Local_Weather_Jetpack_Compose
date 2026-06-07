@@ -5,7 +5,7 @@ import com.ram.core_database.dto.MappedWeather
 
 data class UIStateClass(
     var isLoading: Boolean = true,
-    var isCurrent: Boolean = true,
+    var isCurrent: Boolean = false,
     var weatherData: MappedWeather? = null,
     var forecastData: List<MappedForecast>? = null,
     var searchWeather: MappedWeather? = null,
