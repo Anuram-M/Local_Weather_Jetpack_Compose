@@ -6,7 +6,6 @@ import android.location.Geocoder
 import android.location.Location
 import android.os.Build
 import android.util.Log
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -18,6 +17,7 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.Priority
 import com.google.android.play.agesignals.AgeSignalsManager
 import com.google.android.play.agesignals.AgeSignalsRequest
+import com.google.android.play.agesignals.model.AgeSignalsVerificationStatus
 import com.ram.core_database.mapper.toMappedWeather
 import com.ram.core_database.dto.GPSandWeatherModel
 import com.ram.core_database.entity.CurrentWeatherAndForecast
@@ -107,9 +107,23 @@ class LocationViewModel @Inject constructor(
 
     fun initializeAgeSignalManager() {
         ageSignalsManager.checkAgeSignals(AgeSignalsRequest.builder().build())
-            .addOnSuccessListener { status ->
-                if (status.userStatus() == null) {
+            .addOnSuccessListener { result ->
+                if(result.userStatus() == null) {
                     checkAppState()
+                } else {
+                    when (result.userStatus()) {
+                        AgeSignalsVerificationStatus.SUPERVISED_APPROVAL_DENIED,
+                        AgeSignalsVerificationStatus.SUPERVISED_APPROVAL_PENDING -> {
+                            triggerNavigation(NavStateClass.NavigateToAppRestricted)
+                        }
+
+                        AgeSignalsVerificationStatus.UNKNOWN -> {
+                            checkAppState()
+                        }
+                        else -> {
+                            checkAppState()
+                        }
+                    }
                 }
             }
 
@@ -117,7 +131,7 @@ class LocationViewModel @Inject constructor(
 //
 //        // 2. Mock a simulated Texas minor who has been DENIED parental approval
 //        val mockTexasBlockedUser = AgeSignalsResult.builder()
-//            .setUserStatus(AgeSignalsVerificationStatus.SUPERVISED_APPROVAL_DENIED)
+//            .setUserStatus(AgeSignalsVerificationStatus.VERIFIED)
 //            .setAgeLower(13)
 //            .setAgeUpper(17)
 //            .build()
@@ -129,6 +143,24 @@ class LocationViewModel @Inject constructor(
 //        fakeManager.checkAgeSignals(AgeSignalsRequest.builder().build())
 //            .addOnSuccessListener { result ->
 //                Log.d("AGELIST", "checkAppState: ${result.userStatus()}")
+//
+//                if(result.userStatus() == null) {
+//                    checkAppState()
+//                } else {
+//                    when (result.userStatus()) {
+//                        AgeSignalsVerificationStatus.SUPERVISED_APPROVAL_DENIED,
+//                        AgeSignalsVerificationStatus.SUPERVISED_APPROVAL_PENDING -> {
+//                            triggerNavigation(NavStateClass.NavigateToAppRestricted)
+//                        }
+//
+//                        AgeSignalsVerificationStatus.UNKNOWN -> {
+//                            checkAppState()
+//                        }
+//                        else -> {
+//                            checkAppState()
+//                        }
+//                    }
+//                }
 //            }
     }
 
