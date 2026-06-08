@@ -74,6 +74,7 @@ fun WeatherHomeScreen(
         }
         composable("weather") { WeatherHomeComposable(locationViewModel, navController) }
         composable("history") { HistoryComposable(locationViewModel, navController) }
+        composable("restricted") { AgeRestrictedComposable(locationViewModel) }
     }
 
     LaunchedEffect(Unit) {
@@ -105,6 +106,14 @@ fun WeatherHomeScreen(
                         locationViewModel.updatePermission(true)
                         if (navController.currentDestination?.route != "weather") {
                             navController.navigate("weather") {
+                                popUpTo(0)
+                            }
+                        }
+                    }
+
+                    NavStateClass.NavigateToAppRestricted -> {
+                        if(navController.currentDestination?.route != "restricted") {
+                            navController.navigate("restricted") {
                                 popUpTo(0)
                             }
                         }

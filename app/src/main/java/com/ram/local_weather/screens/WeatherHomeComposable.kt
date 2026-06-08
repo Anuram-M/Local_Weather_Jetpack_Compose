@@ -119,17 +119,17 @@ fun WeatherHomeComposable(
 
     val toggleLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartIntentSenderForResult()
-    ) {  result ->
+    ) { result ->
         run {
             if (result.resultCode == Activity.RESULT_OK) {
-                locationViewModel.getLocationUpdates(context)
+//                locationViewModel.getLocationUpdates(context)
             }
         }
     }
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissios ->
-        when{
+        when {
             permissios.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) ||
                     permissios.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
                 locationViewModel.updatePermission(true)
@@ -143,11 +143,6 @@ fun WeatherHomeComposable(
         locationViewModel.getLocationUpdates(context)
     }
 
-
-//    val weatherData by locationViewModel.mappedWeather.collectAsStateWithLifecycle()
-//    val isLoading by locationViewModel.isLoading.collectAsStateWithLifecycle()
-//    val forecastData by locationViewModel.forecastData.collectAsStateWithLifecycle()
-//    val searchWeatherData by locationViewModel.searchWeather.collectAsStateWithLifecycle()
     val weatherUIState by locationViewModel.weatherDataUI.collectAsStateWithLifecycle()
     val textColor = Color.Black
     val refreshCount by locationViewModel.refreshCount
@@ -178,6 +173,7 @@ fun WeatherHomeComposable(
         )
     }
     var isLocationEnabled by remember { mutableStateOf(initialLocationEnabled) }
+
     DisposableEffect(Unit) {
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
@@ -185,8 +181,13 @@ fun WeatherHomeComposable(
                     val isEnabled = checkerUtil.checkLocationEnabled()
                     if (isEnabled != isLocationEnabled) {
                         isLocationEnabled = isEnabled
-                        locationViewModel.stopLocationUpdate()
-                        pingIcon = if(isEnabled) R.drawable.on_location else R.drawable.location_off
+                        if (isEnabled) {
+                            locationViewModel.getLocationUpdates(context!!)
+                        } else {
+                            locationViewModel.stopLocationUpdate()
+                        }
+                        pingIcon =
+                            if (isEnabled) R.drawable.on_location else R.drawable.location_off
                     }
                 }
             }
@@ -199,11 +200,11 @@ fun WeatherHomeComposable(
     }
 
     LaunchedEffect(refreshCount) {
-        if(weatherUIState.searchWeather != null) {
+        if (weatherUIState.searchWeather != null) {
             isDay = weatherUIState.searchWeather?.icon?.endsWith('d') == true
             mainBg = weatherUIState.searchWeather?.weatherCategory!!
 //                BackgroundSelectorUtil().backgroundChoice(weatherUIState.searchWeather?.weatherCategory!!)
-        } else if(weatherUIState.weatherData != null) {
+        } else if (weatherUIState.weatherData != null) {
             isDay = weatherUIState.weatherData?.icon?.endsWith('d') == true
             mainBg = weatherUIState.weatherData?.weatherCategory!!
 //                BackgroundSelectorUtil().backgroundChoice(weatherUIState.weatherData?.weatherCategory!!)
@@ -233,19 +234,24 @@ fun WeatherHomeComposable(
                 containerColor = Color.White,
                 shape = CircleShape,
                 onClick = {
-                    if(!checkerUtil.checkLocationPermission()) {
+                    if (!checkerUtil.checkLocationPermission()) {
                         launcher.launch(
                             arrayOf(
                                 Manifest.permission.ACCESS_FINE_LOCATION,
                                 Manifest.permission.ACCESS_COARSE_LOCATION
                             )
                         )
-                    } else if(!checkerUtil.checkLocationEnabled()) {
+                    } else if (!checkerUtil.checkLocationEnabled()) {
                         showLocationToggleH(context, locationViewModel, toggleLauncher)
                     }
                 }
             ) {
-                Icon(painter = painterResource(pingIcon), contentDescription = null, tint = Color.Black, modifier = Modifier.size(30.dp))
+                Icon(
+                    painter = painterResource(pingIcon),
+                    contentDescription = null,
+                    tint = Color.Black,
+                    modifier = Modifier.size(30.dp)
+                )
             }
         }
 
@@ -282,7 +288,7 @@ fun WeatherHomeComposable(
 
             Column(modifier = Modifier.safeContentPadding()) {
                 Row(
-                   modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -324,7 +330,12 @@ fun WeatherHomeComposable(
                                     navController.navigate("history")
                                 }
                             ) {
-                                Icon(painter = painterResource(R.drawable.history), tint = Color.Black, contentDescription = null, modifier = Modifier.size(24.dp))
+                                Icon(
+                                    painter = painterResource(R.drawable.history),
+                                    tint = Color.Black,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(24.dp)
+                                )
                             }
                         }
                     }
@@ -401,14 +412,22 @@ fun WeatherHomeComposable(
                                             colors = CardDefaults.cardColors(
                                                 containerColor = Color.Black
                                             ),
-                                            modifier = Modifier.fillMaxWidth()
+                                            modifier = Modifier
+                                                .fillMaxWidth()
                                                 .wrapContentHeight(),
-                                            shape = RoundedCornerShape(topEnd = 10.dp, topStart = 10.dp, bottomEnd = 0.dp, bottomStart = 0.dp)
+                                            shape = RoundedCornerShape(
+                                                topEnd = 10.dp,
+                                                topStart = 10.dp,
+                                                bottomEnd = 0.dp,
+                                                bottomStart = 0.dp
+                                            )
                                         ) {
-                                            if(!checkerUtil.checkLocationEnabled()) {
+                                            if (!checkerUtil.checkLocationEnabled()) {
                                                 Text(
                                                     text = "Not Live",
-                                                    modifier = Modifier.fillMaxWidth().padding(4.dp),
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(4.dp),
                                                     textAlign = TextAlign.Center,
                                                     style = TextStyle(
                                                         fontSize = 18.sp,
@@ -432,7 +451,11 @@ fun WeatherHomeComposable(
                                                     weatherUIState.weatherData?.subLocality
                                                 ), poppinsFont
                                             )
-                                            WeatherDataCard(weatherUIState.weatherData!!, textColor, poppinsFont)
+                                            WeatherDataCard(
+                                                weatherUIState.weatherData!!,
+                                                textColor,
+                                                poppinsFont
+                                            )
                                         }
                                     }
 
@@ -453,7 +476,11 @@ fun WeatherHomeComposable(
                                                 .padding(horizontal = 5.dp)
                                         ) {
                                             items(weatherUIState.forecastData!!) { item ->
-                                                ForecastItemComposable(item, poppinsFont, Modifier.weight(1f))
+                                                ForecastItemComposable(
+                                                    item,
+                                                    poppinsFont,
+                                                    Modifier.weight(1f)
+                                                )
                                             }
                                         }
                                     }
@@ -461,9 +488,10 @@ fun WeatherHomeComposable(
                             }
                         }
 
-                        !weatherUIState.isCurrent && weatherUIState.searchWeather!=null -> {
+                        !weatherUIState.isCurrent && weatherUIState.searchWeather != null -> {
                             QueryLocationWeatherComposable(weatherUIState.searchWeather!!)
                         }
+
                         else -> {
                             Box(
                                 modifier = Modifier
@@ -532,7 +560,8 @@ fun WeatherDataCard(weatherData: MappedWeather, textColor: Color, spFont: FontFa
             Row(
                 modifier = Modifier.padding(vertical = 2.dp),
                 horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,) {
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 AsyncImage(
                     modifier = Modifier
                         .width(100.dp)
