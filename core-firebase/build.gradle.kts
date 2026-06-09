@@ -26,6 +26,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":core-domain"))
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.ktx)
     implementation(platform(libs.firebase.bom))
@@ -36,8 +37,9 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
-    implementation("com.google.dagger:hilt-android:2.52")
-    ksp("com.google.dagger:hilt-compiler:2.52")
+
+    implementation(libs.com.google.dagger.hilt.android4)
+    ksp(libs.com.google.dagger.hilt.compiler2)
 
 
 }

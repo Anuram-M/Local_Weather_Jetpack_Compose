@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Local - Weather</string>
+    <string name="app_desc">Get instant, accurate local forecasts with a beautifully modern weather app designed for absolute simplicity. Check your live local weather using your device\'s GPS, or save a personal history of your favorite global locations to track conditions at a glance. Built with a commitment to family safety and privacy, the app features zero invasive tracking, optional location access, and seamless integration with system-level parental controls.</string>
 </resources>

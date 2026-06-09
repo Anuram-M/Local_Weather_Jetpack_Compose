@@ -327,7 +327,7 @@ fun WeatherHomeComposable(
                         ) {
                             IconButton(
                                 onClick = {
-                                    navController.navigate("history")
+                                    navController.navigate("settings")
                                 }
                             ) {
                                 Icon(

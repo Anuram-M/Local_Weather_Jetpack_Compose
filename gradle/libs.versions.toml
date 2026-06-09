@@ -1,11 +1,20 @@
 [versions]
+ageSignalsVersion = "0.0.3"
 agp = "8.11.2"
+coilComposeVersion = "2.6.0"
+converterGsonVersion = "2.11.0"
+coreTestingVersion = "2.2.0"
 firebaseBom = "33.11.0"
+gsonVersion = "2.10.1"
+hiltAndroidTestingVersion = "2.52"
+hiltCompilerVersion = "1.3.0"
+hiltNavigationComposeVersion = "1.2.0"
 kotlin = "2.0.21"
 coreKtx = "1.17.0"
 junit = "4.13.2"
 junitVersion = "1.3.0"
 espressoCore = "3.7.0"
+kotlinxCoroutinesTestVersion = "1.9.0"
 lifecycleRuntimeKtx = "2.9.4"
 activityCompose = "1.11.0"
 composeBom = "2024.09.00"
@@ -18,13 +27,37 @@ firebaseCrashlytics = "20.0.3"
 googleFirebaseCrashlytics = "3.0.6"
 junitJunit = "4.12"
 appcompat = "1.7.1"
+loggingInterceptorVersion = "4.12.0"
 material = "1.13.0"
 firebasePerf = "22.0.5"
 googleFirebaseFirebasePerf = "2.0.2"
+mockitoAndroidVersion = "5.12.0"
+mockitoCoreVersion = "5.12.0"
+mockitoInlineVersion = "5.2.0"
+mockitoKotlinVersion = "5.3.1"
+mockwebserverVersion = "4.12.0"
+navigationComposeVersion = "2.9.2"
+okhttpVersion = "4.12.0"
+playServicesLocationVersion = "21.3.0"
+retrofitVersion = "2.11.0"
+roomVersion = "2.6.1"
+runtimeTracingVersion = "1.0.0-beta01"
+workRuntimeKtxVersion = "2.9.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hiltCompilerVersion" }
+androidx-runtime-tracing = { module = "androidx.compose.runtime:runtime-tracing", version.ref = "runtimeTracingVersion" }
+coil-kt-coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilComposeVersion" }
+com-google-dagger-hilt-android4 = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroidTestingVersion" }
+com-google-dagger-hilt-compiler2 = { module = "com.google.dagger:hilt-compiler", version.ref = "hiltAndroidTestingVersion" }
+core-testing = { module = "androidx.arch.core:core-testing", version.ref = "coreTestingVersion" }
+dagger-hilt-android-testing = { module = "com.google.dagger:hilt-android-testing", version.ref = "hiltAndroidTestingVersion" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+gms-play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocationVersion" }
+google-gson = { module = "com.google.code.gson:gson", version.ref = "gsonVersion" }
+hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationComposeVersion" }
+jetbrains-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTestVersion" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -45,8 +78,23 @@ firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore
 firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics"}
 junit-junit = { group = "junit", name = "junit", version.ref = "junitJunit" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+kotlin-mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockitoKotlinVersion" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 firebase-perf = { group = "com.google.firebase", name = "firebase-perf"}
+mockito-mockito-android = { module = "org.mockito:mockito-android", version.ref = "mockitoAndroidVersion" }
+mockito-mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockitoCoreVersion" }
+mockito-mockito-inline = { module = "org.mockito:mockito-inline", version.ref = "mockitoInlineVersion" }
+navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationComposeVersion" }
+okhttp3-logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "loggingInterceptorVersion" }
+okhttp3-mockwebserver = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "mockwebserverVersion" }
+okhttp3-okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttpVersion" }
+play-age-signals = { module = "com.google.android.play:age-signals", version.ref = "ageSignalsVersion" }
+retrofit2-converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGsonVersion" }
+retrofit2-retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofitVersion" }
+room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomVersion" }
+room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomVersion" }
+room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomVersion" }
+work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntimeKtxVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
