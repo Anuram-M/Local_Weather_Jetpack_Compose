@@ -38,13 +38,14 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
 
-    val room_version = "2.6.1"
-    implementation("androidx.room:room-runtime:$room_version")
-    ksp("androidx.room:room-compiler:$room_version")
-    implementation("androidx.room:room-ktx:${room_version}")
+    //room
+    implementation(libs.room.runtime)
+    ksp(libs.room.compiler)
+    implementation(libs.room.ktx)
 
-    implementation("com.google.dagger:hilt-android:2.52")
-    ksp("com.google.dagger:hilt-compiler:2.52")
+    //hilt di
+    implementation(libs.com.google.dagger.hilt.android4)
+    ksp(libs.com.google.dagger.hilt.compiler2)
 
-    implementation("com.google.code.gson:gson:2.10.1")
+    implementation(libs.google.gson)
 }

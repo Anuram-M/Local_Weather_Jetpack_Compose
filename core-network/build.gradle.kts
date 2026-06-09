@@ -54,16 +54,16 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
 
-    implementation("com.google.dagger:hilt-android:2.52")
-    ksp("com.google.dagger:hilt-compiler:2.52")
+    implementation(libs.com.google.dagger.hilt.android4)
+    ksp(libs.com.google.dagger.hilt.compiler2)
 
     //RETROFIT
-    implementation("com.squareup.retrofit2:retrofit:2.11.0") // Use the latest version
+    implementation(libs.retrofit2.retrofit) // Use the latest version
 
     //GSON converter
-    implementation("com.squareup.retrofit2:converter-gson:2.11.0") // Use the latest version
+    implementation(libs.retrofit2.converter.gson) // Use the latest version
 
     //HTTP client and logging interceptor
-    implementation("com.squareup.okhttp3:okhttp:4.12.0") // Use the latest version compatible with your Retrofit
-    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0") // Optional, for logging requests/responses
+    implementation(libs.okhttp3.okhttp) // Use the latest version compatible with your Retrofit
+    implementation(libs.okhttp3.logging.interceptor) // Optional, for logging requests/responses
 }

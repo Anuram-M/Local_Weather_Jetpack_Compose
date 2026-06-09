@@ -75,6 +75,10 @@ fun WeatherHomeScreen(
         composable("weather") { WeatherHomeComposable(locationViewModel, navController) }
         composable("history") { HistoryComposable(locationViewModel, navController) }
         composable("restricted") { AgeRestrictedComposable(locationViewModel) }
+        composable("settings") { SettingsComposable(locationViewModel, navController) }
+        composable("about") { AboutComposable(locationViewModel, navController) }
+        composable("notification") { NotificationComposable(locationViewModel, navController) }
+        composable("releasenotes") { ReleaseNotesComposable(locationViewModel, navController) }
     }
 
     LaunchedEffect(Unit) {

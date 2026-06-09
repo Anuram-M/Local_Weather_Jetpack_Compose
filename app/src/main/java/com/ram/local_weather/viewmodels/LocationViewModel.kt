@@ -2,9 +2,12 @@ package com.ram.local_weather.viewmodels
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.location.Geocoder
 import android.location.Location
+import android.net.Uri
 import android.os.Build
+import android.provider.Settings
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.mutableStateOf
@@ -99,12 +102,57 @@ class LocationViewModel @Inject constructor(
 
     private var lastProcessedLocation: Location? = null
 
+    private val _notificationPermission = MutableStateFlow(false)
+    val notificationPermission = _notificationPermission.asStateFlow()
+
+    private val _isAlreadyAsked = MutableStateFlow(false)
+    val alreadyAskedNotificationPermission = _isAlreadyAsked.asStateFlow()
+
+    val releaseNotes = firebaserepository.fetchReleaseNotes().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(3000),
+        initialValue = emptyList()
+    )
+
     init {
         fetchData()
         lastExecutedTime = null
         initializeAgeSignalManager()
+        fetchPermissionState()
     }
 
+    fun fetchPermissionState() {
+        viewModelScope.launch {
+            _notificationPermission.value = checkerUtil.checkNotificationPermission()
+            _isAlreadyAsked.value = SharedPrefUtil.getBoolean(PREF_KEYS.ALREADY_ASKED_NOTIFICATION_PERMISSION.name)
+            SharedPrefUtil.saveBoolean(PREF_KEYS.NOTIFICATION_PERMISSION.name, _notificationPermission.value)
+        }
+    }
+
+    fun checkNotificationPermission(): Boolean {
+        return checkerUtil.checkNotificationPermission()
+    }
+
+    fun openAppSettings(context: Context) {
+        val intent =  Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            // Forms a deep-link directly to your specific app package configuration page
+            data = Uri.fromParts("package", context.packageName, null)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        context.startActivity(intent)
+    }
+
+    fun updateAlreadyAsked() {
+        viewModelScope.launch {
+            SharedPrefUtil.saveBoolean(PREF_KEYS.ALREADY_ASKED_NOTIFICATION_PERMISSION.name, true)
+        }
+    }
+    fun updateNotificationPermission(permissionGranted: Boolean) {
+        viewModelScope.launch {
+            _notificationPermission.value = permissionGranted
+            SharedPrefUtil.saveBoolean(PREF_KEYS.NOTIFICATION_PERMISSION.name, _notificationPermission.value)
+        }
+    }
     fun initializeAgeSignalManager() {
         ageSignalsManager.checkAgeSignals(AgeSignalsRequest.builder().build())
             .addOnSuccessListener { result ->
