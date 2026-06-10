@@ -32,6 +32,7 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.messaging)
     implementation(libs.firebase.perf)
     implementation(libs.material)
     testImplementation(libs.junit)
