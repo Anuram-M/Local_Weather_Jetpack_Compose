@@ -6,4 +6,5 @@ import kotlinx.coroutines.flow.Flow
 interface FirestoreRepository {
     fun fetchCity() : Flow<List<String>>
     fun fetchReleaseNotes(): Flow<List<ReleaseData>>
+    suspend fun topicSubscriptionStatus(subPreference: Boolean) : Flow<String>
 }

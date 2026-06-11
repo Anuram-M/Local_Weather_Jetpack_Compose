@@ -16,8 +16,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,15 +54,39 @@ import com.ram.local_weather.viewmodels.LocationViewModel
 fun AboutComposable(locationViewModel: LocationViewModel, navController: NavHostController) {
     val context = LocalContext.current.applicationContext
     val version = getVersionName(context)
-    AboutComposableContent(context, version)
+    AboutComposableContent(context, version, onNavigate = {route ->
+        if(route.equals("back")) {
+            navController.popBackStack()
+        } else {
+            navController.navigate(route)
+        }
+    })
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
-fun AboutComposableContent(context: Context, version: String) {
+fun AboutComposableContent(context: Context, version: String, onNavigate: (String) -> Unit) {
     Scaffold(
         topBar = {
-
+            TopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent,
+                    titleContentColor = Color.Black,
+                    navigationIconContentColor = Color.Black,
+                ),
+                title = { Text("About") },
+                navigationIcon = {
+                    IconButton(onClick = {
+                        onNavigate("back")
+                    }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Navigate back"
+                        )
+                    }
+                }
+            )
         }
     ) { innerPadding ->
         Box(
@@ -158,6 +189,6 @@ fun getVersionName(context: Context): String {
 fun previewAbout() {
     val context = LocalContext.current.applicationContext
     LocalWeatherTheme {
-        AboutComposableContent(context, "1.4")
+        AboutComposableContent(context, "1.4") {}
     }
 }

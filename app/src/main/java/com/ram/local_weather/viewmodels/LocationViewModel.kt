@@ -42,14 +42,19 @@ import com.ram.local_weather.util.PREF_KEYS
 import com.ram.local_weather.util.SharedPrefUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -114,6 +119,25 @@ class LocationViewModel @Inject constructor(
         initialValue = emptyList()
     )
 
+    val subscriptionStatusChange = MutableSharedFlow<Boolean>(replay = 1)
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val subscriptionStatus = subscriptionStatusChange
+        .flatMapLatest { status ->
+            firebaserepository.topicSubscriptionStatus(status)
+        }
+        .distinctUntilChanged()
+        .onEach { staus ->
+            when(staus) {
+                 "Subscribed" -> SharedPrefUtil.saveBoolean(PREF_KEYS.NOTIFICATION_TOPIC_SUBSCRIPTION.name, true)
+                 "UnSubscribed" -> SharedPrefUtil.saveBoolean(PREF_KEYS.NOTIFICATION_TOPIC_SUBSCRIPTION.name, false)
+            }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(3000),
+            initialValue = if(SharedPrefUtil.getBoolean(PREF_KEYS.NOTIFICATION_TOPIC_SUBSCRIPTION.name)) "Subscribed" else "UnSubscribed"
+        )
+
     init {
         fetchData()
         lastExecutedTime = null
@@ -126,7 +150,21 @@ class LocationViewModel @Inject constructor(
             _notificationPermission.value = checkerUtil.checkNotificationPermission()
             _isAlreadyAsked.value = SharedPrefUtil.getBoolean(PREF_KEYS.ALREADY_ASKED_NOTIFICATION_PERMISSION.name)
             SharedPrefUtil.saveBoolean(PREF_KEYS.NOTIFICATION_PERMISSION.name, _notificationPermission.value)
+            modifyTopicSubscription()
         }
+    }
+
+    private fun modifyTopicSubscription() {
+        val topicStatus = SharedPrefUtil.getBoolean(PREF_KEYS.NOTIFICATION_TOPIC_SUBSCRIPTION.name)
+        if(_notificationPermission.value && !topicStatus) {
+            updateTopicSubscription(true)
+        } else if(!_notificationPermission.value && topicStatus) {
+            updateTopicSubscription(false)
+        }
+    }
+
+    fun updateTopicSubscription(subPreference: Boolean) {
+        subscriptionStatusChange.tryEmit(subPreference)
     }
 
     fun checkNotificationPermission(): Boolean {

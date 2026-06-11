@@ -2,6 +2,7 @@ package com.ram.core_firebase.repositoryimpl
 
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.snapshots
+import com.google.firebase.messaging.FirebaseMessaging
 import com.ram.core_domain.models.ReleaseData
 import com.ram.core_firebase.repository.FirestoreRepository
 import kotlinx.coroutines.Dispatchers
@@ -52,5 +53,38 @@ class FirestoreRepositoryImpl @Inject constructor() : FirestoreRepository {
         awaitClose {
             listener.remove()
         }
+    }.flowOn(Dispatchers.IO)
+
+    override suspend fun topicSubscriptionStatus(subPreference: Boolean): Flow<String> = callbackFlow{
+            if(subPreference.equals(true)) {
+                FirebaseMessaging.getInstance().subscribeToTopic("app_update")
+                    .addOnCompleteListener { result ->
+                        if(result.isSuccessful) {
+                            trySend("Subscribed")
+                        } else {
+                            trySend("")
+                        }
+                        close()
+                    }.addOnFailureListener {
+                        trySend("")
+                        close()
+                    }
+            } else {
+                FirebaseMessaging.getInstance().unsubscribeFromTopic("app_update")
+                    .addOnCompleteListener { result ->
+                        if (result.isSuccessful) {
+                            trySend("UnSubscribed")
+                        } else {
+                            trySend("")
+                        }
+                        close()
+                    }.addOnFailureListener {
+                        trySend("")
+                        close()
+                    }
+            }
+
+        awaitClose {  }
+
     }.flowOn(Dispatchers.IO)
 }
