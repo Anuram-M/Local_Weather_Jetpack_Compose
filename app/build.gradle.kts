@@ -1,3 +1,7 @@
+import java.io.FileInputStream
+import java.util.Properties
+import kotlin.apply
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -7,6 +11,13 @@ plugins {
     alias(libs.plugins.google.gms.google.services)
     alias(libs.plugins.google.firebase.crashlytics)
     alias(libs.plugins.google.firebase.firebase.perf)
+}
+
+val localProperties = Properties().apply {
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        load(FileInputStream(localPropertiesFile))
+    }
 }
 
 android {
@@ -23,8 +34,26 @@ android {
         testInstrumentationRunner = "com.ram.local_weather.CustomHiltTestRunner"
     }
 
-    buildTypes {
+    signingConfigs {
+        create("release") {
 
+            val keystorePath = System.getenv("RELEASE_KEYSTORE_PATH")
+                ?: localProperties.getProperty("RELEASE_KEYSTORE_PATH")
+
+            storeFile = file(keystorePath)
+            storePassword = System.getenv("RELEASE_KEYSTORE_PASSWORD")
+                ?: localProperties.getProperty("RELEASE_KEYSTORE_PASSWORD")
+
+            keyAlias = System.getenv("RELEASE_KEY_ALIAS")
+                ?: localProperties.getProperty("RELEASE_KEY_ALIAS")
+
+            keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
+                ?: localProperties.getProperty("RELEASE_KEY_PASSWORD")
+
+        }
+    }
+
+    buildTypes {
         debug {
             if (System.getenv("GITHUB_ACTIONS") != "true") {
                 applicationIdSuffix = ".dev"
@@ -51,6 +80,8 @@ android {
             configure<com.google.firebase.crashlytics.buildtools.gradle.CrashlyticsExtension> {
                 nativeSymbolUploadEnabled = false
             }
+
+            signingConfig = signingConfigs.getByName("release")
         }
 
         create("benchmark") {
