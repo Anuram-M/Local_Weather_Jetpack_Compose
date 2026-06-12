@@ -93,7 +93,7 @@ jobs:
 
   deploy-to-play-store:
     name: Deploy to Google Play Internal Testing
-    needs: create-release
+    needs: create-firebase-release
     runs-on: ubuntu-latest
 
     steps:
