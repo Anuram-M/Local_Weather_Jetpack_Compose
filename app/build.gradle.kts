@@ -40,7 +40,7 @@ android {
             val keystorePath = System.getenv("RELEASE_KEYSTORE_PATH")
                 ?: localProperties.getProperty("RELEASE_KEYSTORE_PATH")
 
-            storeFile = file(keystorePath)
+            storeFile = rootProject.file(keystorePath)
             storePassword = System.getenv("RELEASE_KEYSTORE_PASSWORD")
                 ?: localProperties.getProperty("RELEASE_KEYSTORE_PASSWORD")
 
