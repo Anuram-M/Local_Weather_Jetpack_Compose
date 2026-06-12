@@ -11,7 +11,7 @@ platform :android do
                          &.split(":")&.last&.strip
                          &.to_i
 
-    if new_version_code.nil? || new_version_code.empty?
+    if new_version_code.nil? || new_version_code == 0
       UI.user_error!("Could not automatically parse the versionCode from Gradle properties. Make sure it's defined explicitly.")
     end
 
