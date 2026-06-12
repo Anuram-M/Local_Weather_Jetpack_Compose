@@ -4,33 +4,17 @@ platform :android do
   desc "Build and deploy a new version to Google Play Internal Testing"
   lane :deploy_internal do
 
-    properties_output = gradle(task: ":app:properties")
-
-    new_version_code = properties_output.split("\n")
-                         .find { |line| line.start_with?("versionCode:") }
-                         &.split(":")&.last&.strip
-                         &.to_i
-
-    if new_version_code.nil? || new_version_code == 0
-      UI.user_error!("Could not automatically parse the versionCode from Gradle properties. Make sure it's defined explicitly.")
-    end
-
-    UI.message("Deploying with manually bumped Version Code: #{new_version_code}")
-
     gradle(
       task: 'clean bundle',
       build_type: 'Release',
-      properties: {
-        "android.injected.version.code" => new_version_code
-      }
     )
 
-    # 3. Upload the newly generated bundle to Google Play
     upload_to_play_store(
       track: 'internal',
       aab: 'app/build/outputs/bundle/release/app-release.aab',
       skip_upload_metadata: true,
       skip_upload_images: true
     )
+
   end
 end
