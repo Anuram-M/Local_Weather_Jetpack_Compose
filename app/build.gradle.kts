@@ -26,7 +26,9 @@ android {
     buildTypes {
 
         debug {
-            applicationIdSuffix = ".dev"
+            if (System.getenv("GITHUB_ACTIONS") != "true") {
+                applicationIdSuffix = ".dev"
+            }
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
