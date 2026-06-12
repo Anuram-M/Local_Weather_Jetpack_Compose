@@ -4,9 +4,12 @@ platform :android do
   desc "Build and deploy a new version to Google Play Internal Testing"
   lane :deploy_internal do
 
-    new_version_code = gradle(task: "properties").split("\n")
+    properties_output = gradle(task: ":app:properties")
+
+    new_version_code = properties_output.split("\n")
                          .find { |line| line.start_with?("versionCode:") }
                          &.split(":")&.last&.strip
+                         &.to_i
 
     if new_version_code.nil? || new_version_code.empty?
       UI.user_error!("Could not automatically parse the versionCode from Gradle properties. Make sure it's defined explicitly.")
