@@ -59,7 +59,9 @@
 |---|---|
 | ⚡ **Fetch current weather** | Current location's weather is fetched using GPS coordinates |
 | 🔍 **Remote location weather** | Through searchbar input, the user can see the weather of any available locations |
-| 🔔 **Background fetch with notification** | In progress |
+| 📊 **Historical search data** | List of locations searched by the user in the last 90 days |
+| 🔔 **App update notification** | Willing users can opt in to receive system notifications for app updates |
+| 🔹 **Homescreen widget** | In Progress |
 
 ---
 
@@ -124,7 +126,13 @@ If there is any error, verify the cause in the console
 
 | Version | Date | Download |
 |---|---|---|
-| `v1.0` | Coming soon | [![APK](https://img.shields.io/badge/Download-APK-3DDC84?style=for-the-badge&logo=android)](../../releases) |
+| `v1.0` | Available | [![APK](https://img.shields.io/badge/Download-APK-3DDC84?style=for-the-badge&logo=android)](../../releases) |
+| `v1.1` | Available | [![APK](https://img.shields.io/badge/Download-APK-3DDC84?style=for-the-badge&logo=android)](../../releases) |
+| `v1.2` | Available | [![APK](https://img.shields.io/badge/Download-APK-3DDC84?style=for-the-badge&logo=android)](../../releases) |
+| `v1.3` | Available | [![APK](https://img.shields.io/badge/Download-APK-3DDC84?style=for-the-badge&logo=android)](../../releases) |
+| `v1.4` | Available | [![APK](https://img.shields.io/badge/Download-APK-3DDC84?style=for-the-badge&logo=android)](../../releases) |
+| `v1.5` | Available | [![APK](https://img.shields.io/badge/Download-APK-3DDC84?style=for-the-badge&logo=android)](../../releases) |
+| `v1.6` | Coming soon | |
 
 ---
 
@@ -132,17 +140,24 @@ If there is any error, verify the cause in the console
 
 ```
 v1.0  ████████████████████  ✅  Initial release
-v1.0  ████████░░░░░░░░░░░░  🔧  Weather through notification (In progress) 
+v1.1  ████████████████████  ✅  Weather through notification (In progress)
+v1.2  ████████████████████  ✅  Weather through notification
+v1.3  ████████████████████  ✅  Weather through notification
+v1.4  ████████████████████  ✅  Weather through notification
+v1.5  ████████████████████  ✅  Weather through notification
+v1.6  ████████░░░░░░░░░░░░  🔧  Weather through notification
 ```
 
 - [x] Project scaffolding and architecture setup
 - [x] Core UI with Jetpack Compose
 - [x] Fetch current weather — Complete
 - [x] Fetch queried weather — Complete
-- [ ] Background Notification — *in progress*
-- [ ] Refined color palette
-- [ ] Themes light/dark
-- [ ] Tablet / large screen optimization
+- [x] Historical search data — Complete
+- [x] App update notification — Complete
+- [ ] Homescreen widget — *in progress*
+- [ ] Refined color palette - *in progress*
+- [ ] Themes light/dark - *in progress*
+- [ ] Tablet / large screen optimization - *in progress*
 
 > Have an idea? [Open a feature request](../../issues/new) — contributions are welcome!
 
