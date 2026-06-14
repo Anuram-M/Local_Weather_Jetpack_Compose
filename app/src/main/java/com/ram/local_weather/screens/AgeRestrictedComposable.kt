@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -55,6 +56,7 @@ fun AgeRestrictedComposable(locationViewModel: LocationViewModel) {
 
             Column(
                 modifier = Modifier
+                    .widthIn(min = 250.dp, max = 600.dp)
                     .fillMaxWidth()
                     .background(Color.LightGray.copy(alpha = 0.75f),
                         shape = RoundedCornerShape(10.dp))
@@ -73,6 +75,7 @@ fun AgeRestrictedComposable(locationViewModel: LocationViewModel) {
                 )
                 Text(
                     modifier = Modifier
+                        .widthIn(min = 250.dp, max = 550.dp)
                         .fillMaxWidth()
                         .padding(20.dp),
                     textAlign = TextAlign.Center,

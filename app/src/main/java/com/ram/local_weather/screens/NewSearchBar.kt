@@ -6,10 +6,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,9 +30,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.TextFieldValue
@@ -53,6 +61,40 @@ fun NewSearchBar(
 ) {
 
     val searchList by locationViewModel.searchLocations.collectAsStateWithLifecycle()
+
+    val density = LocalDensity.current
+//    Log.d("SERBAR", "NewSearchBar: ${density}")
+
+    val searchbarBottomPx by remember { mutableStateOf(0f) }
+
+    val windowKeyboardPx = WindowInsets.ime
+//    Log.d("SERBAR", "NewSearchBar: ime: ${windowKeyboardPx}, search ${searchbarBottomPx}")
+
+    val screenHeightPx = with(density) { WindowInsets.systemBars.getBottom(this) + WindowInsets.ime.getBottom(this)}
+
+//    Log.d("SERBAR", "NewSearchBar: screen height - keyboard : ${screenHeightPx}")
+
+    val imeBottom = WindowInsets.ime.getBottom(density)
+//    Log.d("SERBAR", "NewSearchBar: keyboard top : ${imeBottom}")
+
+    val systemChannels = WindowInsets.systemBars.getBottom(density)
+//    Log.d("SERBAR", "NewSearchBar: ${systemChannels}")
+
+    val availableGap = remember(searchbarBottomPx, imeBottom) {
+       val gapInPx =  if(imeBottom > 0) {
+           (searchbarBottomPx)
+       } else {
+           Float.MAX_VALUE
+       }
+        gapInPx
+    }
+
+    Log.d("SERBAR", "NewSearchBar: available : ${availableGap}")
+
+    var availableHeight by remember { mutableStateOf(500.dp) }
+
+    val imeHeight = with(density) { WindowInsets.ime.getBottom(this).toDp() }
+
     SearchBar(
         colors = SearchBarDefaults.colors(
             containerColor = Color(0xFFE0E0E0),
@@ -62,8 +104,11 @@ fun NewSearchBar(
         onExpandedChange = { onExpandChange() },
         modifier = Modifier
             .widthIn(max = 400.dp)
-            .heightIn(max = 350.dp)
-            .padding(start = 20.dp, end = 20.dp, bottom = 10.dp),
+            .heightIn(max = 250.dp)
+            .padding(start = 20.dp, end = 20.dp, bottom = 10.dp)
+            .onGloballyPositioned { coordinates ->
+                availableHeight = with(density) { coordinates.size.height.toDp() }
+            },
         inputField = {
             SearchBarDefaults.InputField(
                 colors = TextFieldDefaults.colors(
@@ -129,6 +174,7 @@ fun NewSearchBar(
             it.contains(query, ignoreCase = true)
         }
 
+        Log.d("SERBAR", "NewSearchBar: aheight : ${availableHeight}")
         if (filteredList.isNotEmpty()) {
             filteredList.isNotEmpty().let {
                 LazyColumn(

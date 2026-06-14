@@ -40,6 +40,7 @@ import com.ram.local_weather.stateclass.UIStateClass
 import com.ram.local_weather.util.CheckerUtil
 import com.ram.local_weather.util.PREF_KEYS
 import com.ram.local_weather.util.SharedPrefUtil
+import com.ram.local_weather.widget.WidgetDataHandler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -74,7 +75,8 @@ class LocationViewModel @Inject constructor(
     private val currentWeatherRepository: CurrentWeatherAndForecastRepository,
     private val weatherHistoryRepository: WeatherHistoryRepository,
     private val firebaserepository: FirestoreRepository,
-    private val ageSignalsManager: AgeSignalsManager
+    private val ageSignalsManager: AgeSignalsManager,
+    private val widgetDataHandler: WidgetDataHandler
 ) : ViewModel() {
 
     private var _permissionGranted = false
@@ -402,6 +404,7 @@ class LocationViewModel @Inject constructor(
                     val currentForecast =
                         (forecastResult.data as ForeCastResponse).list.map { it.toMappedForecast() }
 
+                    widgetDataHandler.updateWidgetData(address.subLocality ?: address.locality, currentWeather.mainTemp.toInt().toString(), currentWeather.description!!)
                     currentWeatherRepository.insertData(
                         CurrentWeatherAndForecast(
                             id = 1,

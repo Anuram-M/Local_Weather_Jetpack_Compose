@@ -14,8 +14,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -61,7 +64,7 @@ fun PermissionScreenComposable(
     val backgroundLocationLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { result ->
-        if(result) {
+        if (result) {
             locationViewModel.checkAppState()
         }
 
@@ -69,17 +72,19 @@ fun PermissionScreenComposable(
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissios ->
-        when{
+        when {
             permissios.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
                 locationViewModel.updatePermission(true)
                 locationViewModel.checkAppState()
 //                showBackgroundPermissionDialog = true
             }
+
             permissios.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
                 locationViewModel.updatePermission(true)
                 locationViewModel.checkAppState()
 //                showBackgroundPermissionDialog = true
             }
+
             else -> {
 
             }
@@ -87,7 +92,7 @@ fun PermissionScreenComposable(
     }
 
 
-    if(showBackgroundPermissionDialog) {
+    if (showBackgroundPermissionDialog) {
         if (ContextCompat.checkSelfPermission(
                 context,
                 Manifest.permission.ACCESS_BACKGROUND_LOCATION
@@ -158,7 +163,7 @@ fun PermissionScreenComposable(
     val notificationLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { granted ->
-        if(granted) {
+        if (granted) {
             notificationStatus = true
         }
 
@@ -168,7 +173,7 @@ fun PermissionScreenComposable(
         Box {
             Image(
                 modifier = Modifier.fillMaxSize(),
-              painter = painterResource(R.drawable.permission_bg)  ,
+                painter = painterResource(R.drawable.permission_bg),
                 contentDescription = null,
                 contentScale = ContentScale.Crop
             )
@@ -181,24 +186,46 @@ fun PermissionScreenComposable(
             )
         }
 
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .systemBarsPadding()
-            .padding(bottom = 20.dp, start = 10.dp, end = 10.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Bottom) {
-            Text(text = "This app requires location permission to fetch your location weather using GPS coordinates", textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, fontFamily = poppinsFont, fontSize = 16.sp, modifier = Modifier.padding(10.dp), color = Color.White)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .safeContentPadding()
+                .padding(bottom = 20.dp, start = 10.dp, end = 10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Bottom
+        ) {
+            Text(
+                text = "This app requires location permission to fetch your location weather using GPS coordinates",
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Bold,
+                fontFamily = poppinsFont,
+                fontSize = 16.sp,
+                modifier = Modifier
+                    .widthIn(min = 250.dp, max = 600.dp)
+                    .fillMaxWidth()
+                    .padding(10.dp), color = Color.White
+            )
             Button(
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E88E5)),
                 onClick = {
-                launcher.launch(
-                    arrayOf(
-                        Manifest.permission.ACCESS_COARSE_LOCATION,
-                        Manifest.permission.ACCESS_FINE_LOCATION,
+                    launcher.launch(
+                        arrayOf(
+                            Manifest.permission.ACCESS_COARSE_LOCATION,
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                        )
                     )
-                )
-            }, modifier = Modifier
+                }, modifier = Modifier
+                    .widthIn(min = 250.dp, max = 600.dp)
                     .fillMaxWidth()
-                    .padding(5.dp)) {
-                Text("Location Permission", color = Color.White, modifier = Modifier.padding(5.dp), fontSize = 16.sp, fontFamily = poppinsFont)
+                    .padding(5.dp)
+            ) {
+                Text(
+                    "Location Permission",
+                    color = Color.White,
+                    modifier = Modifier.padding(5.dp),
+                    fontSize = 16.sp,
+                    fontFamily = poppinsFont
+                )
             }
 
 //            Button(

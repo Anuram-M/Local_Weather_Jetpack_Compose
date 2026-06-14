@@ -199,4 +199,9 @@ dependencies {
     androidTestImplementation(libs.kotlin.mockito.kotlin)// Mockito-Kotlin extension (adds better Kotlin syntax & null-safety)
     androidTestImplementation(libs.core.testing)
     debugImplementation(libs.androidx.runtime.tracing)
+    implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.glance.material3)
+
+    // DataStore (Essential for managing Glance Widget State)
+    implementation(libs.androidx.datastore.preferences)
 }
