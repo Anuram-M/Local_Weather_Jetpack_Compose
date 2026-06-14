@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -37,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -75,14 +77,17 @@ fun LocationToggleComposable(
 
 
     val bgBrush = remember {
-        Brush.linearGradient(listOf(Color.White, Color.Gray, Color.Black))
+        Brush.linearGradient(colors = listOf(Color.White, Color.Gray, Color.Black),
+            start = Offset(0f, 0f),
+            end = Offset(0f, Float.POSITIVE_INFINITY)
+        )
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(
-                brush = bgBrush
+                brush = bgBrush,
             )
             .padding(0.dp), contentAlignment = Alignment.Center
     ) {
@@ -110,12 +115,16 @@ fun LocationToggleComposable(
                 fontSize = 16.sp,
                 fontFamily = poppinsFont,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(10.dp),
+                modifier = Modifier
+                    .widthIn(min = 250.dp, max = 600.dp)
+                    .fillMaxWidth()
+                    .padding(10.dp),
                 color = Color.White
             )
             Spacer(modifier = Modifier.height(10.dp))
             Button(
                 modifier = Modifier
+                    .widthIn(min = 250.dp, max = 600.dp)
                     .fillMaxWidth()
                     .padding(5.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E88E5)),
