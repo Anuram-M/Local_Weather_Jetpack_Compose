@@ -4,18 +4,23 @@ import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -37,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -62,85 +68,65 @@ fun NewSearchBar(
 
     val searchList by locationViewModel.searchLocations.collectAsStateWithLifecycle()
 
-    val density = LocalDensity.current
-//    Log.d("SERBAR", "NewSearchBar: ${density}")
+    val config = LocalConfiguration.current
 
-    val searchbarBottomPx by remember { mutableStateOf(0f) }
-
-    val windowKeyboardPx = WindowInsets.ime
-//    Log.d("SERBAR", "NewSearchBar: ime: ${windowKeyboardPx}, search ${searchbarBottomPx}")
-
-    val screenHeightPx = with(density) { WindowInsets.systemBars.getBottom(this) + WindowInsets.ime.getBottom(this)}
-
-//    Log.d("SERBAR", "NewSearchBar: screen height - keyboard : ${screenHeightPx}")
-
-    val imeBottom = WindowInsets.ime.getBottom(density)
-//    Log.d("SERBAR", "NewSearchBar: keyboard top : ${imeBottom}")
-
-    val systemChannels = WindowInsets.systemBars.getBottom(density)
-//    Log.d("SERBAR", "NewSearchBar: ${systemChannels}")
-
-    val availableGap = remember(searchbarBottomPx, imeBottom) {
-       val gapInPx =  if(imeBottom > 0) {
-           (searchbarBottomPx)
-       } else {
-           Float.MAX_VALUE
-       }
-        gapInPx
+    val screenHeight = remember {
+        mutableStateOf(config.screenHeightDp.dp)
     }
 
-    Log.d("SERBAR", "NewSearchBar: available : ${availableGap}")
+    val screenWidth = remember {
+        mutableStateOf(config.screenWidthDp.dp)
+    }
 
-    var availableHeight by remember { mutableStateOf(500.dp) }
-
-    val imeHeight = with(density) { WindowInsets.ime.getBottom(this).toDp() }
-
-    SearchBar(
-        colors = SearchBarDefaults.colors(
-            containerColor = Color(0xFFE0E0E0),
-            dividerColor = Color.Black,
-        ),
-        expanded = expanded,
-        onExpandedChange = { onExpandChange() },
-        modifier = Modifier
-            .widthIn(max = 400.dp)
-            .heightIn(max = 250.dp)
-            .padding(start = 20.dp, end = 20.dp, bottom = 10.dp)
-            .onGloballyPositioned { coordinates ->
-                availableHeight = with(density) { coordinates.size.height.toDp() }
-            },
-        inputField = {
-            SearchBarDefaults.InputField(
-                colors = TextFieldDefaults.colors(
-                    unfocusedTextColor = Color.Black,
-                    focusedTextColor = Color.Black,
-                    cursorColor = Color.Black
-                ),
-                query = query,
-                onQueryChange = { onQueryChange(it) },
-                onSearch = {
-                    onExpandChange()
-                    locationViewModel.getWeatherDataWithLocation(query.trim())
-                },
-                expanded = expanded,
-                onExpandedChange = { onExpandChange() },
-                placeholder = {
-                    Text(
-                        "Search by city...",
-                        color = Color.Gray,
-                        fontFamily = poppinsFont,
-                        fontSize = 14.sp
-                    )
-                },
-                leadingIcon = {
-                    Icon(
-                        Icons.Default.Search,
-                        contentDescription = "Search",
-                        tint = Color.Black
-                    )
-                },
-                trailingIcon = {
-                    if (!expanded) {
+    Column(modifier = Modifier.fillMaxWidth().safeContentPadding()) {
+        Box(modifier = Modifier.fillMaxWidth()) {
+            val isLandscape = screenHeight.value < 480.dp
+            if(isLandscape) {
+                Row(modifier = Modifier.fillMaxWidth().height(80.dp).padding(start = 20.dp, end = 20.dp, bottom = 10.dp)) {
+                    Row(modifier = Modifier) {
+                        SearchBar(
+                            colors = SearchBarDefaults.colors(
+                                containerColor = Color(0xFFE0E0E0),
+                                dividerColor = Color.Black,
+                            ),
+                            expanded = expanded,
+                            onExpandedChange = { onExpandChange() },
+                            modifier = Modifier
+                                .widthIn(max = (screenWidth.value/2))
+                                .heightIn(max = 80.dp)
+                            ,
+                            inputField = {
+                                SearchBarDefaults.InputField(
+                                    colors = TextFieldDefaults.colors(
+                                        unfocusedTextColor = Color.Black,
+                                        focusedTextColor = Color.Black,
+                                        cursorColor = Color.Black
+                                    ),
+                                    query = query,
+                                    onQueryChange = { onQueryChange(it) },
+                                    onSearch = {
+                                        onExpandChange()
+                                        locationViewModel.getWeatherDataWithLocation(query.trim())
+                                    },
+                                    expanded = expanded,
+                                    onExpandedChange = { onExpandChange() },
+                                    placeholder = {
+                                        Text(
+                                            "Search by city...",
+                                            color = Color.Gray,
+                                            fontFamily = poppinsFont,
+                                            fontSize = 14.sp
+                                        )
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            Icons.Default.Search,
+                                            contentDescription = "Search",
+                                            tint = Color.Black
+                                        )
+                                    },
+                                    trailingIcon = {
+                                        if (!expanded) {
 //                        IconButton(
 //                            onClick = {
 //                                navController.navigate("history")
@@ -151,53 +137,193 @@ fun NewSearchBar(
 //                                tint = Color.Black
 //                            )
 //                        }
-                    } else if (query.isNotEmpty()) {
-                        IconButton(
-                            onClick = {
-                                onQueryChange("")
-                                onClear()
-                            }) {
-                            Icon(
-                                Icons.Default.Close,
-                                contentDescription = "Clear",
-                                tint = Color.Black
-                            )
+                                        } else if (query.isNotEmpty()) {
+                                            IconButton(
+                                                onClick = {
+                                                    onQueryChange("")
+                                                    onClear()
+                                                }) {
+                                                Icon(
+                                                    Icons.Default.Close,
+                                                    contentDescription = "Clear",
+                                                    tint = Color.Black
+                                                )
+                                            }
+                                        }
+                                    },
+                                )
+                            },
+                            tonalElevation = 0.dp,
+                            shadowElevation = 4.dp
+                        ) {}
+                        if(expanded) {
+                            val filteredList = searchList.filter {
+                                it.contains(query, ignoreCase = true)
+                            }
+                            if (filteredList.isNotEmpty()) {
+                                filteredList.isNotEmpty().let {
+                                    LazyRow(
+                                        modifier = Modifier
+                                            .background(Color(0xFFDFDFDF))
+                                            .padding(5.dp)
+                                    ) {
+                                        items(filteredList) { item ->
+                                            Row(
+                                                modifier = Modifier
+                                                    .clickable {
+                                                        onQueryChange(item)
+                                                        locationViewModel.getWeatherDataWithLocation(
+                                                            item
+                                                        )
+                                                        onExpandChange()
+                                                    }
+                                                    .padding(10.dp)
+                                            ) {
+                                                Icon(Icons.Default.Search, contentDescription = null)
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text(
+                                                    item,
+                                                    fontFamily = poppinsFont,
+                                                    style = TextStyle(color = Color.Black)
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxHeight()
+                                        .fillMaxWidth(), contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        "No Suggestions available!!",
+                                        fontFamily = poppinsFont,
+                                        style = TextStyle(color = Color.Black)
+                                    )
+                                }
+                            }
+
                         }
                     }
-                },
-            )
-        },
-        tonalElevation = 0.dp,
-        shadowElevation = 4.dp
-    ) {
-        val filteredList = searchList.filter {
-            it.contains(query, ignoreCase = true)
-        }
 
-        Log.d("SERBAR", "NewSearchBar: aheight : ${availableHeight}")
-        if (filteredList.isNotEmpty()) {
-            filteredList.isNotEmpty().let {
-                LazyColumn(
+                }
+            } else {
+                SearchBar(
+                    colors = SearchBarDefaults.colors(
+                        containerColor = Color(0xFFE0E0E0),
+                        dividerColor = Color.Black,
+                    ),
+                    expanded = expanded,
+                    onExpandedChange = { onExpandChange() },
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color(0xFFDFDFDF))
-                        .padding(5.dp)
-                ) {
-                    items(filteredList) { item ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    onQueryChange(item)
-                                    locationViewModel.getWeatherDataWithLocation(item)
-                                    onExpandChange()
+                        .widthIn(max = 400.dp)
+                        .heightIn(max = 350.dp)
+                        .padding(start = 20.dp, end = 20.dp, bottom = 10.dp),
+                    inputField = {
+                        SearchBarDefaults.InputField(
+                            colors = TextFieldDefaults.colors(
+                                unfocusedTextColor = Color.Black,
+                                focusedTextColor = Color.Black,
+                                cursorColor = Color.Black
+                            ),
+                            query = query,
+                            onQueryChange = { onQueryChange(it) },
+                            onSearch = {
+                                onExpandChange()
+                                locationViewModel.getWeatherDataWithLocation(query.trim())
+                            },
+                            expanded = expanded,
+                            onExpandedChange = { onExpandChange() },
+                            placeholder = {
+                                Text(
+                                    "Search by city...",
+                                    color = Color.Gray,
+                                    fontFamily = poppinsFont,
+                                    fontSize = 14.sp
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Default.Search,
+                                    contentDescription = "Search",
+                                    tint = Color.Black
+                                )
+                            },
+                            trailingIcon = {
+                                if (!expanded) {
+//                        IconButton(
+//                            onClick = {
+//                                navController.navigate("history")
+//                            }) {
+//                            Icon(
+//                                Icons.Default.ShoppingCart,
+//                                contentDescription = "History",
+//                                tint = Color.Black
+//                            )
+//                        }
+                                } else if (query.isNotEmpty()) {
+                                    IconButton(
+                                        onClick = {
+                                            onQueryChange("")
+                                            onClear()
+                                        }) {
+                                        Icon(
+                                            Icons.Default.Close,
+                                            contentDescription = "Clear",
+                                            tint = Color.Black
+                                        )
+                                    }
                                 }
-                                .padding(10.dp)
+                            },
+                        )
+                    },
+                    tonalElevation = 0.dp,
+                    shadowElevation = 4.dp
+                ) {
+                    val filteredList = searchList.filter {
+                        it.contains(query, ignoreCase = true)
+                    }
+
+//        Log.d("SERBAR", "NewSearchBar: aheight : ${availableHeight}")
+                    if (filteredList.isNotEmpty()) {
+                        filteredList.isNotEmpty().let {
+                            LazyColumn(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(Color(0xFFDFDFDF))
+                                    .padding(5.dp)
+                            ) {
+                                items(filteredList) { item ->
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                onQueryChange(item)
+                                                locationViewModel.getWeatherDataWithLocation(item)
+                                                onExpandChange()
+                                            }
+                                            .padding(10.dp)
+                                    ) {
+                                        Icon(Icons.Default.Search, contentDescription = null)
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            item,
+                                            fontFamily = poppinsFont,
+                                            style = TextStyle(color = Color.Black)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .fillMaxWidth(), contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Default.Search, contentDescription = null)
-                            Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                item,
+                                "No Suggestions available!!",
                                 fontFamily = poppinsFont,
                                 style = TextStyle(color = Color.Black)
                             )
@@ -205,18 +331,9 @@ fun NewSearchBar(
                     }
                 }
             }
-        } else {
-            Box(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .fillMaxWidth(), contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    "No Suggestions available!!",
-                    fontFamily = poppinsFont,
-                    style = TextStyle(color = Color.Black)
-                )
-            }
         }
+
     }
+
+
 }

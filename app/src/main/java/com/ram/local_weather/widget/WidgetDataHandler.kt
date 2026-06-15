@@ -6,7 +6,6 @@ import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.state.PreferencesGlanceStateDefinition
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
-import javax.inject.Singleton
 
 
 class WidgetDataHandler @Inject constructor(@ApplicationContext private val context: Context) {
@@ -14,7 +13,8 @@ class WidgetDataHandler @Inject constructor(@ApplicationContext private val cont
     suspend fun updateWidgetData(
         location: String,
         temp: String,
-        condition: String) {
+        condition: String
+    ) {
 
         val glanceManager = GlanceAppWidgetManager(context)
         val glanceIds = glanceManager.getGlanceIds(WeatherGlanceWidget::class.java)
@@ -28,10 +28,7 @@ class WidgetDataHandler @Inject constructor(@ApplicationContext private val cont
 
                 mprefs
             }
-
             WeatherGlanceWidget().update(context, id)
         }
-
-
     }
 }

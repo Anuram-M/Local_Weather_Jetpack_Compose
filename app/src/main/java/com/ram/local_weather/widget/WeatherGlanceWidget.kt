@@ -1,15 +1,10 @@
 package com.ram.local_weather.widget
 
 import android.content.Context
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.glance.layout.Column
 import androidx.glance.text.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
@@ -74,19 +69,11 @@ class WeatherGlanceWidget : GlanceAppWidget() {
             ) {
                 Row(
                     modifier = GlanceModifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-//                    Text(
-//                        text = "Location: ",
-//                        style = TextStyle(
-//                            fontSize = 42.sp,
-//                            fontWeight = FontWeight.Bold,
-//
-//                        )
-//                    )
-
                     Image(
                         provider = ImageProvider(R.drawable.ping),
-                        modifier = GlanceModifier.size(40.dp),
+                        modifier = GlanceModifier.size(30.dp),
                         contentDescription = null
                     )
                     Spacer(
@@ -107,13 +94,6 @@ class WeatherGlanceWidget : GlanceAppWidget() {
                 Row(
                     modifier = GlanceModifier.fillMaxWidth(),
                 ) {
-//                    Text(
-//                        text = "Temperature: ",
-//                        style = TextStyle(
-//                            fontSize = 20.sp,
-//                            fontWeight = FontWeight.Bold
-//                        )
-//                    )
                     Image(
                         provider = ImageProvider(R.drawable.temp),
                         modifier = GlanceModifier.size(24.dp),
@@ -130,24 +110,6 @@ class WeatherGlanceWidget : GlanceAppWidget() {
                         )
                     )
                 }
-//                Row(
-//                    modifier = GlanceModifier.fillMaxWidth(),
-//                ) {
-//                    Text(
-//                        text = "Weather: ",
-//                        style = TextStyle(
-//                            fontSize = 24.sp,
-//                            fontWeight = FontWeight.Bold
-//                        )
-//                    )
-//                    Text(
-//                        text = condition,
-//                        style = TextStyle(
-//                            fontSize = 24.sp,
-//                            fontWeight = FontWeight.Normal
-//                        )
-//                    )
-//                }
             }
         }
     }
