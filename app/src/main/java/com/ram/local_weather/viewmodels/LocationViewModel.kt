@@ -187,16 +187,18 @@ class LocationViewModel @Inject constructor(
             SharedPrefUtil.saveBoolean(PREF_KEYS.ALREADY_ASKED_NOTIFICATION_PERMISSION.name, true)
         }
     }
+
     fun updateNotificationPermission(permissionGranted: Boolean) {
         viewModelScope.launch {
             _notificationPermission.value = permissionGranted
             SharedPrefUtil.saveBoolean(PREF_KEYS.NOTIFICATION_PERMISSION.name, _notificationPermission.value)
         }
     }
+
     fun initializeAgeSignalManager() {
         ageSignalsManager.checkAgeSignals(AgeSignalsRequest.builder().build())
             .addOnSuccessListener { result ->
-                if(result.userStatus() == null) {
+                if (result.userStatus() == null) {
                     checkAppState()
                 } else {
                     when (result.userStatus()) {
@@ -208,11 +210,15 @@ class LocationViewModel @Inject constructor(
                         AgeSignalsVerificationStatus.UNKNOWN -> {
                             checkAppState()
                         }
+
                         else -> {
                             checkAppState()
                         }
                     }
                 }
+            }
+            .addOnFailureListener { error ->
+                checkAppState()
             }
 
 //        val fakeManager = FakeAgeSignalsManager()
@@ -319,7 +325,10 @@ class LocationViewModel @Inject constructor(
         val request = LocationRequest.Builder(
             Priority.PRIORITY_HIGH_ACCURACY,
             20000L
-        ).build()
+        ).apply {
+            // 🔑 STEP 2: Allow a slightly lower accuracy fallback if GPS isn't matching
+            setMinUpdateDistanceMeters(10f)
+        }.build()
 
         locationCallback = object : LocationCallback() {
             @RequiresApi(Build.VERSION_CODES.TIRAMISU)
