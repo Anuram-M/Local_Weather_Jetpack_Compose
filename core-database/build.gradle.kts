@@ -48,4 +48,8 @@ dependencies {
     ksp(libs.com.google.dagger.hilt.compiler2)
 
     implementation(libs.google.gson)
+    // Room Paging Support
+    implementation(libs.androidx.room.paging) // Use your current Room version
+    // Compose Paging Integration
+    implementation(libs.androidx.paging.compose)
 }

@@ -13,6 +13,8 @@ import androidx.annotation.RequiresApi
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -46,6 +48,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -139,6 +142,20 @@ class LocationViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(3000),
             initialValue = if(SharedPrefUtil.getBoolean(PREF_KEYS.NOTIFICATION_TOPIC_SUBSCRIPTION.name)) "Subscribed" else "UnSubscribed"
         )
+
+    val historyContentPageSize = MutableStateFlow(20)
+
+    fun updatePageSize(newValue: Int) {
+        historyContentPageSize.value = newValue
+    }
+
+    fun resetPageSize() {
+        historyContentPageSize.value = 20
+    }
+
+    val pagedHistory: Flow<PagingData<WeatherHistory>> = historyContentPageSize.flatMapLatest {
+        weatherHistoryRepository.fetchHistoryP(it)
+    }.cachedIn(viewModelScope)
 
     init {
         fetchData()
