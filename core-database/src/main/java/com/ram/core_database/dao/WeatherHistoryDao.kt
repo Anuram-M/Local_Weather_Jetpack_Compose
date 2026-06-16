@@ -1,5 +1,6 @@
 package com.ram.core_database.dao
 
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -15,6 +16,9 @@ interface WeatherHistoryDao {
 
     @Query("select * from weather_history order by lastChecked desc")
     fun getHistory(): Flow<List<WeatherHistory>>
+
+    @Query("select * from weather_history order by lastChecked desc")
+    fun getHistoryPage(): PagingSource<Int, WeatherHistory>
 
     @Query("delete from weather_history where lastChecked <:keepTime")
     suspend fun deleteOldRecords(keepTime: Long)

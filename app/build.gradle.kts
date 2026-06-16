@@ -204,4 +204,7 @@ dependencies {
 
     // DataStore (Essential for managing Glance Widget State)
     implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.room.paging) // Use your current Room version
+    // Compose Paging Integration
+    implementation(libs.androidx.paging.compose)
 }
