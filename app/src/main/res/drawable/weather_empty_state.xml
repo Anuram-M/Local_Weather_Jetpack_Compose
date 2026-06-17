@@ -198,7 +198,7 @@
 <!--        android:strokeColor="#A8C4D8"/>-->
 <!--  </group>-->
 <!--</vector>-->
-<vector xmlns:android="http://schemas.android.com/apk/res/android" xmlns:aapt="http://schemas.android.com/aapt"
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:viewportWidth="400"
     android:viewportHeight="400"
     android:width="400dp"

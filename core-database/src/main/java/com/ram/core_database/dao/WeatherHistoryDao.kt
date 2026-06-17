@@ -20,6 +20,9 @@ interface WeatherHistoryDao {
     @Query("select * from weather_history order by lastChecked desc")
     fun getHistoryPage(): PagingSource<Int, WeatherHistory>
 
+    @Query("select * from weather_history order by place asc")
+    fun getHistoryPageByPlace(): PagingSource<Int, WeatherHistory>
+
     @Query("delete from weather_history where lastChecked <:keepTime")
     suspend fun deleteOldRecords(keepTime: Long)
 }

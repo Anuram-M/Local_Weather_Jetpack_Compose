@@ -3,14 +3,10 @@ package com.ram.core_database.repositoryimpl
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import androidx.paging.PagingSource
 import com.ram.core_database.MyDatabase
 import com.ram.core_database.entity.WeatherHistory
 import com.ram.core_database.repository.WeatherHistoryRepository
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
 class WeatherHistoryRepositoryImpl @Inject constructor(): WeatherHistoryRepository {
@@ -34,6 +30,17 @@ class WeatherHistoryRepositoryImpl @Inject constructor(): WeatherHistoryReposito
                 enablePlaceholders = false
             ),
             pagingSourceFactory = { db.weatherHistoryDao().getHistoryPage() }
+        ).flow
+    }
+
+    override fun fetchHistoryPByPlace(size: Int): Flow<PagingData<WeatherHistory>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = size,
+                prefetchDistance = size / 2,
+                enablePlaceholders = false
+            ),
+            pagingSourceFactory = { db.weatherHistoryDao().getHistoryPageByPlace() }
         ).flow
     }
 }
