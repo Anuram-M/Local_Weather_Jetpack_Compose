@@ -15,6 +15,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import androidx.paging.insertSeparators
+import androidx.paging.map
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -23,11 +25,11 @@ import com.google.android.gms.location.Priority
 import com.google.android.play.agesignals.AgeSignalsManager
 import com.google.android.play.agesignals.AgeSignalsRequest
 import com.google.android.play.agesignals.model.AgeSignalsVerificationStatus
-import com.ram.core_database.mapper.toMappedWeather
 import com.ram.core_database.dto.GPSandWeatherModel
 import com.ram.core_database.entity.CurrentWeatherAndForecast
 import com.ram.core_database.entity.WeatherHistory
 import com.ram.core_database.mapper.toMappedForecast
+import com.ram.core_database.mapper.toMappedWeather
 import com.ram.core_database.repository.CurrentWeatherAndForecastRepository
 import com.ram.core_database.repository.WeatherHistoryRepository
 import com.ram.core_domain.NETWORK_RESULT
@@ -37,9 +39,11 @@ import com.ram.core_domain.usecase.GetForecastUseCase
 import com.ram.core_domain.usecase.GetLocationDataUseCase
 import com.ram.core_domain.usecase.GetWeatherUseCase
 import com.ram.core_firebase.repository.FirestoreRepository
+import com.ram.local_weather.stateclass.HistoryUIData
 import com.ram.local_weather.stateclass.NavStateClass
 import com.ram.local_weather.stateclass.UIStateClass
 import com.ram.local_weather.util.CheckerUtil
+import com.ram.local_weather.util.DateConvertor
 import com.ram.local_weather.util.PREF_KEYS
 import com.ram.local_weather.util.SharedPrefUtil
 import com.ram.local_weather.widget.WidgetDataHandler
@@ -53,11 +57,11 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -101,11 +105,11 @@ class LocationViewModel @Inject constructor(
             initialValue = emptyList()
         )
 
-    val historyData = weatherHistoryRepository.fetchHistory().stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(3000),
-        initialValue = emptyList()
-    )
+//    val historyData = weatherHistoryRepository.fetchHistory().stateIn(
+//        scope = viewModelScope,
+//        started = SharingStarted.WhileSubscribed(3000),
+//        initialValue = emptyList()
+//    )
 
     var _navState = Channel<NavStateClass>(Channel.BUFFERED)
     val navEvents = _navState.receiveAsFlow()
@@ -143,19 +147,63 @@ class LocationViewModel @Inject constructor(
             initialValue = if(SharedPrefUtil.getBoolean(PREF_KEYS.NOTIFICATION_TOPIC_SUBSCRIPTION.name)) "Subscribed" else "UnSubscribed"
         )
 
-    val historyContentPageSize = MutableStateFlow(20)
+    val historyContentPageSize = MutableStateFlow(10)
+
+    private val historyListingType = MutableStateFlow("Timeline")
+    val historyType = historyListingType.asStateFlow()
 
     fun updatePageSize(newValue: Int) {
         historyContentPageSize.value = newValue
     }
 
     fun resetPageSize() {
-        historyContentPageSize.value = 20
+        historyContentPageSize.value = 10
     }
 
-    val pagedHistory: Flow<PagingData<WeatherHistory>> = historyContentPageSize.flatMapLatest {
-        weatherHistoryRepository.fetchHistoryP(it)
-    }.cachedIn(viewModelScope)
+    fun updatePageListing(newType: String) {
+        resetPageSize()
+        historyListingType.value = newType
+    }
+
+    val pagedHistory: Flow<PagingData<HistoryUIData>> =
+        historyContentPageSize
+            .flatMapLatest {
+                historyListingType.flatMapLatest { type ->
+                    if(type.equals("Timeline")) {
+                        weatherHistoryRepository.fetchHistoryP(it)
+                    } else {
+                        weatherHistoryRepository.fetchHistoryPByPlace(it)
+                    }
+                }.map { pagingData ->
+                    pagingData.map {  HistoryUIData.Item(it) }
+                }.map { pagingData ->
+                    pagingData.insertSeparators { before: HistoryUIData.Item?, after: HistoryUIData.Item? ->
+                        if(historyListingType.value.equals("Timeline")) {
+                            val currentMonth = after?.let {
+                                DateConvertor.getMonthGroup(after?.data?.lastChecked!!)
+                            }
+                            val previousMonth = before?.let {
+                                DateConvertor.getMonthGroup(before?.data?.lastChecked!!)
+                            }
+                            if(currentMonth != null && currentMonth != previousMonth) {
+                                HistoryUIData.Header(currentMonth)
+                            } else null
+                        } else {
+                            val currentLetter = after?.let {
+                                it.data.place[0].uppercase()
+                            }
+                            val previousLetter = before?.let {
+                                it.data.place[0].uppercase()
+                            }
+                            if(currentLetter != null && currentLetter != previousLetter) {
+                                HistoryUIData.Header(currentLetter)
+                            } else {
+                                null
+                            }
+                        }
+                    }
+                }
+            }.cachedIn(viewModelScope)
 
     init {
         fetchData()

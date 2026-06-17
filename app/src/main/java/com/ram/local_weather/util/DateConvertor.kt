@@ -1,7 +1,6 @@
 package com.ram.local_weather.util
 
 import android.text.format.DateUtils
-import android.util.Log
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId

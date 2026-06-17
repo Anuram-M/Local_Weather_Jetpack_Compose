@@ -1,6 +1,5 @@
 import java.io.FileInputStream
 import java.util.Properties
-import kotlin.apply
 
 plugins {
     alias(libs.plugins.android.application)
@@ -28,8 +27,8 @@ android {
         applicationId = "com.ram.local_weather"
         minSdk = 28
         targetSdk = 37
-        versionCode = 6
-        versionName = "1.5"
+        versionCode = 7
+        versionName = "1.6"
 
         testInstrumentationRunner = "com.ram.local_weather.CustomHiltTestRunner"
     }

@@ -1,6 +1,5 @@
 package com.ram.core_database.util
 
-import android.text.TextWatcher
 import androidx.room.TypeConverter
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken

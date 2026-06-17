@@ -1,6 +1,5 @@
 package com.ram.core_network
 
-import android.util.Log
 import com.ram.core_domain.NETWORK_RESULT
 import com.ram.core_domain.models.ForeCastResponse
 import com.ram.core_domain.models.WeatherResponse

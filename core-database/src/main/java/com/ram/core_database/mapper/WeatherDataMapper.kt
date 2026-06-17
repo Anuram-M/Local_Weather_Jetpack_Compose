@@ -1,11 +1,7 @@
 package com.ram.core_database.mapper
 
-import android.util.Log
 import com.ram.core_database.dto.GPSandWeatherModel
-import com.ram.core_database.dto.MappedForecast
 import com.ram.core_database.dto.MappedWeather
-import com.ram.core_domain.models.ForeCastResponse
-import com.ram.core_domain.models.ForecastItem
 import java.util.Locale
 import kotlin.math.round
 
