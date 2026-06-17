@@ -147,16 +147,17 @@ class LocationViewModel @Inject constructor(
             initialValue = if(SharedPrefUtil.getBoolean(PREF_KEYS.NOTIFICATION_TOPIC_SUBSCRIPTION.name)) "Subscribed" else "UnSubscribed"
         )
 
-    val historyContentPageSize = MutableStateFlow(5)
+    val historyContentPageSize = MutableStateFlow(10)
 
-    val historyListingType = MutableStateFlow("timeline")
+    private val historyListingType = MutableStateFlow("Timeline")
+    val historyType = historyListingType.asStateFlow()
 
     fun updatePageSize(newValue: Int) {
         historyContentPageSize.value = newValue
     }
 
     fun resetPageSize() {
-        historyContentPageSize.value = 20
+        historyContentPageSize.value = 10
     }
 
     fun updatePageListing(newType: String) {
@@ -168,7 +169,7 @@ class LocationViewModel @Inject constructor(
         historyContentPageSize
             .flatMapLatest {
                 historyListingType.flatMapLatest { type ->
-                    if(type.equals("timeline")) {
+                    if(type.equals("Timeline")) {
                         weatherHistoryRepository.fetchHistoryP(it)
                     } else {
                         weatherHistoryRepository.fetchHistoryPByPlace(it)
@@ -177,7 +178,7 @@ class LocationViewModel @Inject constructor(
                     pagingData.map {  HistoryUIData.Item(it) }
                 }.map { pagingData ->
                     pagingData.insertSeparators { before: HistoryUIData.Item?, after: HistoryUIData.Item? ->
-                        if(historyListingType.value.equals("timeline")) {
+                        if(historyListingType.value.equals("Timeline")) {
                             val currentMonth = after?.let {
                                 DateConvertor.getMonthGroup(after?.data?.lastChecked!!)
                             }

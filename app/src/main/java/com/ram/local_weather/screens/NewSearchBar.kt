@@ -243,7 +243,7 @@ fun NewSearchBar(
                     onExpandedChange = { onExpandChange() },
                     modifier = Modifier
                         .widthIn(max = 400.dp)
-                        .heightIn(max = 300.dp)
+                        .heightIn(max = 320.dp)
                         .padding(start = 20.dp, end = 20.dp, bottom = 10.dp),
                     inputField = {
                         SearchBarDefaults.InputField(

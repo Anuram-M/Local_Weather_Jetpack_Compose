@@ -48,6 +48,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
@@ -63,11 +64,7 @@ import kotlin.math.round
 fun HistoryComposable(locationViewModel: LocationViewModel, navController: NavController) {
 
     val historyPaged = locationViewModel.pagedHistory.collectAsLazyPagingItems()
-
-    val groupOrder = rememberSaveable {
-        mutableStateOf("Timeline")
-    }
-
+    
     val dateConverter = remember {
         mutableStateOf(DateConvertor)
     }
@@ -75,6 +72,8 @@ fun HistoryComposable(locationViewModel: LocationViewModel, navController: NavCo
     var expandMenu by remember {
         mutableStateOf(false)
     }
+
+    val historyListType by locationViewModel.historyType.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -159,7 +158,7 @@ fun HistoryComposable(locationViewModel: LocationViewModel, navController: NavCo
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = groupOrder.value,
+                                    text = historyListType,
                                     modifier = Modifier
                                         .wrapContentSize()
                                         .padding(),
@@ -184,16 +183,14 @@ fun HistoryComposable(locationViewModel: LocationViewModel, navController: NavCo
                                 DropdownMenuItem(
                                     text = { Text("Alphabetical") },
                                     onClick = {
-                                        locationViewModel.updatePageListing("alphabetical")
-                                        groupOrder.value = "Alphabetical"
+                                        locationViewModel.updatePageListing("Alphabetical")
                                         expandMenu = false
                                     }
                                 )
                                 DropdownMenuItem(
                                     text = { Text("Timeline") },
                                     onClick = {
-                                        locationViewModel.updatePageListing("timeline")
-                                        groupOrder.value = "Timeline"
+                                        locationViewModel.updatePageListing("Timeline")
                                         expandMenu = false
                                     }
                                 )
