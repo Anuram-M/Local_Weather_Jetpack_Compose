@@ -39,7 +39,33 @@ android {
             val keystorePath = System.getenv("RELEASE_KEYSTORE_PATH")
                 ?: localProperties.getProperty("RELEASE_KEYSTORE_PATH")
 
-            storeFile = rootProject.file(keystorePath)
+//            storeFile = rootProject.file(keystorePath)
+            storeFile = if (keystorePath != null) {
+                val pathFile = File(keystorePath)
+
+                // 1. Resolve the file based on whether the path is absolute or relative
+                val resolvedFile = if (pathFile.isAbsolute) {
+                    pathFile
+                } else {
+                    // Your snippet for relative paths
+                    val rootFile = rootProject.file(keystorePath)
+                    println("Root file: exists - ${rootFile.exists()}")
+                    if (rootFile.exists()) rootFile else file(keystorePath)
+                }
+
+                // 2. Print diagnostic info to the CI/CD console logs
+                val pathType = if (pathFile.isAbsolute) "ABSOLUTE" else "RELATIVE"
+                println("====== SIGNING CONFIG DIAGNOSTICS ======")
+                println("Configured Path: $keystorePath ($pathType)")
+                println("========================================")
+
+                resolvedFile
+            } else {
+                println("====== SIGNING CONFIG WARNING ======")
+                println("RELEASE_KEYSTORE_PATH is null!")
+                println("====================================")
+                null
+            }
             storePassword = System.getenv("RELEASE_KEYSTORE_PASSWORD")
                 ?: localProperties.getProperty("RELEASE_KEYSTORE_PASSWORD")
 
