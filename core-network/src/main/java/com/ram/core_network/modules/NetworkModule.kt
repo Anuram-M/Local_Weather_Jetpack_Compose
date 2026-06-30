@@ -6,6 +6,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -19,9 +20,9 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideHttpInterceptor() : HttpLoggingInterceptor {
+    fun provideHttpInterceptor(): HttpLoggingInterceptor {
         return HttpLoggingInterceptor().apply {
-            level = if(BuildConfig.DEBUG) {
+            level = if (BuildConfig.DEBUG) {
                 HttpLoggingInterceptor.Level.BODY
             } else {
                 HttpLoggingInterceptor.Level.NONE
@@ -31,21 +32,34 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(httpLoggingInterceptor: HttpLoggingInterceptor) : OkHttpClient {
+    fun provideOkHttpClient(httpLoggingInterceptor: HttpLoggingInterceptor): OkHttpClient {
+        val apiInterceptor = Interceptor { chain ->
+            val originalRequest = chain.request()
+            val originalUrl = originalRequest.url
+
+            val newUrl =
+                originalUrl.newBuilder().addQueryParameter("appid", BuildConfig.WEATHER_API_KEY)
+                    .build()
+            val newRequestWithKey = originalRequest.newBuilder().url(newUrl).build()
+            return@Interceptor chain.proceed(newRequestWithKey)
+        }
+
         return OkHttpClient.Builder()
+            .addInterceptor(apiInterceptor)
             .addInterceptor(httpLoggingInterceptor)
             .build()
     }
 
     @Provides
     @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient) : Retrofit {
-        return Retrofit.Builder().baseUrl("https://api.openweathermap.org/").addConverterFactory(GsonConverterFactory.create()).client(okHttpClient).build()
+    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
+        return Retrofit.Builder().baseUrl("https://api.openweathermap.org/")
+            .addConverterFactory(GsonConverterFactory.create()).client(okHttpClient).build()
     }
 
     @Provides
     @Singleton
-    fun provideWeatherService(retrofit: Retrofit) : WeatherService {
+    fun provideWeatherService(retrofit: Retrofit): WeatherService {
         return retrofit.create(WeatherService::class.java)
     }
 }

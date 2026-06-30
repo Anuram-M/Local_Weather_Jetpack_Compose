@@ -37,6 +37,7 @@ jobs:
       - name: Assemble release
         run: ./gradlew assembleRelease
         env:
+          WEATHER_API_KEY: ${{ secrets.WEATHER_API_KEY }}
           RELEASE_KEYSTORE_PATH: "app/release-keystore.jks"
           RELEASE_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           RELEASE_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
@@ -75,6 +76,8 @@ jobs:
 
       - name: Build Dev release for firebase
         run: ./gradlew assembleDebug
+        env:
+          WEATHER_API_KEY: ${{ secrets.WEATHER_API_KEY }}
 
       - name: Create firebase upload
         uses: wzieba/Firebase-Distribution-Github-Action@v1.7.1
@@ -122,6 +125,7 @@ jobs:
       - name: Run Fastlane Deployment
         run: fastlane deploy_internal
         env:
+          WEATHER_API_KEY: ${{ secrets.WEATHER_API_KEY }}
           RELEASE_KEYSTORE_PATH: "app/release-keystore.jks"
           RELEASE_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           RELEASE_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
