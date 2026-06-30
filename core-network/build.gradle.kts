@@ -24,8 +24,8 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
-
-        val weatherKey = localProperties.getProperty("WEATHER_API_KEY") ?: "\"dfdfdf\""
+        val apiKey = System.getenv("WEATHER_API_KEY")
+        val weatherKey = if(!apiKey.isNullOrEmpty()) apiKey else localProperties.getProperty("WEATHER_API_KEY") ?: "\"dfdfdf\""
 
         buildConfigField("String", "WEATHER_API_KEY", weatherKey)
     }

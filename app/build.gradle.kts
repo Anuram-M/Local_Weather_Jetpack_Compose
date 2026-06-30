@@ -27,8 +27,8 @@ android {
         applicationId = "com.ram.local_weather"
         minSdk = 28
         targetSdk = 37
-        versionCode = 8
-        versionName = "1.7"
+        versionCode = 9
+        versionName = "1.8"
 
         testInstrumentationRunner = "com.ram.local_weather.CustomHiltTestRunner"
     }
