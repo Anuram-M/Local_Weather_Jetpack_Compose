@@ -27,7 +27,8 @@ android {
         val apiKey = System.getenv("WEATHER_API_KEY")
         val weatherKey = if(!apiKey.isNullOrEmpty()) apiKey else localProperties.getProperty("WEATHER_API_KEY") ?: "\"dfdfdf\""
 
-        buildConfigField("String", "WEATHER_API_KEY", weatherKey)
+        val formattedWeatherKey = if(weatherKey.startsWith("\"") && weatherKey.endsWith("\"")) { weatherKey } else "\"${weatherKey}\""
+        buildConfigField("String", "WEATHER_API_KEY", formattedWeatherKey)
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
