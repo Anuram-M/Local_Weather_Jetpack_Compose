@@ -55,6 +55,7 @@ import androidx.paging.compose.itemKey
 import com.ram.local_weather.R
 import com.ram.local_weather.stateclass.HistoryUIData
 import com.ram.local_weather.ui.theme.poppinsFont
+import com.ram.local_weather.util.AppNavigator
 import com.ram.local_weather.util.DateConvertor
 import com.ram.local_weather.viewmodels.LocationViewModel
 import kotlin.math.round
@@ -89,7 +90,8 @@ fun HistoryComposable(locationViewModel: LocationViewModel, navController: NavCo
                 navigationIcon = {
                     // ✅ This puts the back arrow exactly where it belongs
                     IconButton(onClick = {
-                        navController.popBackStack()
+                        AppNavigator.navigateUp()
+//                        navController.popBackStack()
                     }) {
                         Icon(
                             // AutoMirrored ensures the arrow flips correctly for RTL languages like Arabic
