@@ -58,7 +58,6 @@ fun NewSearchBar(
     locationViewModel: LocationViewModel,
     onClear: () -> Unit,
     poppinsFont: FontFamily,
-    navController: NavHostController
 ) {
 
     val searchList by locationViewModel.searchLocations.collectAsStateWithLifecycle()

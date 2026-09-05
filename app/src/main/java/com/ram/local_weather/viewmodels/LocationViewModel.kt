@@ -11,6 +11,7 @@ import android.provider.Settings
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.mutableStateOf
+import androidx.datastore.preferences.SharedPreferencesMigration
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
@@ -342,6 +343,14 @@ class LocationViewModel @Inject constructor(
     fun checkAppState() {
         viewModelScope.launch {
             val newState = withContext(Dispatchers.IO) {
+
+                val alreadyOnboarded = SharedPrefUtil.getBoolean(
+                    PREF_KEYS.ALREADY_ONBOARDED.name
+                )
+                if(!alreadyOnboarded) {
+                    return@withContext NavStateClass.NavigateToOnboard
+                }
+
                 val locationPermissionGranted = checkerUtil.checkLocationPermission()
                 val locationPermissionAsked = SharedPrefUtil.getBoolean(
                     PREF_KEYS.PERMISSION_ALREADY_ASKED.name

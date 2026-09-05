@@ -56,6 +56,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.ram.local_weather.ui.theme.LocalWeatherTheme
 import com.ram.local_weather.ui.theme.poppinsFont
+import com.ram.local_weather.util.AppNavigator
 import com.ram.local_weather.viewmodels.LocationViewModel
 
 
@@ -99,9 +100,11 @@ fun NotificationComposable(locationViewModel: LocationViewModel, navHostControll
         subscriptionStatus,
         onNavigate = { route ->
             if(route.equals("back")) {
-                navHostController.popBackStack()
+                AppNavigator.navigateUp()
+//                navHostController.popBackStack()
             } else {
-                navHostController.navigate(route)
+                AppNavigator.navigateTo(route)
+//                navHostController.navigate(route)
             }
         },
         onRequestPermission = { change ->

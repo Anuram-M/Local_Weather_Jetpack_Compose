@@ -45,6 +45,7 @@ import androidx.navigation.NavHostController
 import com.ram.local_weather.R
 import com.ram.local_weather.ui.theme.LocalWeatherTheme
 import com.ram.local_weather.ui.theme.poppinsFont
+import com.ram.local_weather.util.AppNavigator
 import com.ram.local_weather.viewmodels.LocationViewModel
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -54,9 +55,11 @@ fun AboutComposable(locationViewModel: LocationViewModel, navController: NavHost
     val version = getVersionName(context)
     AboutComposableContent(context, version, onNavigate = {route ->
         if(route.equals("back")) {
-            navController.popBackStack()
+            AppNavigator.navigateUp()
+//            navController.popBackStack()
         } else {
-            navController.navigate(route)
+            AppNavigator.navigateTo(route)
+//            navController.navigate(route)
         }
     })
 }

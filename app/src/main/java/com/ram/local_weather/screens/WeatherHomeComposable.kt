@@ -88,6 +88,7 @@ import com.ram.core_database.dto.MappedWeather
 import com.ram.local_weather.ForecastItemComposable
 import com.ram.local_weather.R
 import com.ram.local_weather.ui.theme.poppinsFont
+import com.ram.local_weather.util.AppNavigator
 import com.ram.local_weather.util.BackgroundSelectorUtil
 import com.ram.local_weather.util.CheckerUtil
 import com.ram.local_weather.viewmodels.LocationViewModel
@@ -304,7 +305,6 @@ fun WeatherHomeComposable(
                                 locationViewModel.getLocationUpdates(context)
                             },
                             poppinsFont,
-                            navController
                         )
                     }
                     AnimatedVisibility(
@@ -322,7 +322,8 @@ fun WeatherHomeComposable(
                         ) {
                             IconButton(
                                 onClick = {
-                                    navController.navigate("settings")
+                                    AppNavigator.navigateTo("settings")
+//                                    navController.navigate("settings")
                                 }
                             ) {
                                 Icon(

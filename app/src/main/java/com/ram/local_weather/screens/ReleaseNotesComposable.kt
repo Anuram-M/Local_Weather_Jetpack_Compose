@@ -40,6 +40,7 @@ import androidx.navigation.NavHostController
 import com.ram.core_domain.models.ReleaseData
 import com.ram.local_weather.ui.theme.LocalWeatherTheme
 import com.ram.local_weather.ui.theme.poppinsFont
+import com.ram.local_weather.util.AppNavigator
 import com.ram.local_weather.viewmodels.LocationViewModel
 
 
@@ -49,9 +50,11 @@ fun ReleaseNotesComposable(locationViewModel: LocationViewModel, navHostControll
 
     ReleaseNotesComposableContent(releaseNotes, onNavigate = { route ->
         if(route.equals("back")) {
-            navHostController.popBackStack()
+            AppNavigator.navigateUp()
+//            navHostController.popBackStack()
         } else {
-            navHostController.navigate(route)
+            AppNavigator.navigateTo(route)
+//            navHostController.navigate(route)
         }
     })
 }

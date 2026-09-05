@@ -7,6 +7,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
@@ -14,7 +15,10 @@ import androidx.lifecycle.flowWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.ram.local_weather.onboarding.OnboardingComposable
 import com.ram.local_weather.stateclass.NavStateClass
+import com.ram.local_weather.stateclass.Navigator
+import com.ram.local_weather.util.AppNavigator
 import com.ram.local_weather.viewmodels.LocationViewModel
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -27,6 +31,15 @@ fun WeatherHomeScreen(
     val context = LocalContext.current.applicationContext
 
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    LaunchedEffect(Unit) {
+        AppNavigator.navDestination.collect { event ->
+            when(event) {
+                is Navigator.NavigateTo -> navController.navigate(event.route)
+                is Navigator.NavigateUp -> navController.popBackStack()
+            }
+
+        }
+    }
     NavHost(
         navController = navController,
         startDestination = "loading",
@@ -58,7 +71,8 @@ fun WeatherHomeScreen(
             )
         }
     ) {
-        composable("loading") { LoadingScreen() }
+        composable("loading") { LoadingComposable() }
+        composable("onboarding") { OnboardingComposable(locationViewModel) }
         composable("permission") { PermissionScreenComposable(locationViewModel, navController) }
         composable("location") {
             LocationToggleComposable(
@@ -83,6 +97,13 @@ fun WeatherHomeScreen(
                 Lifecycle.State.STARTED
             ).collect { event ->
                 when (event) {
+                    is NavStateClass.NavigateToOnboard -> {
+                        if (navController.currentDestination?.route != "onboarding") {
+                            navController.navigate("onboarding") {
+                                popUpTo(0)
+                            }
+                        }
+                    }
                     is NavStateClass.NavigateToPermission -> {
                         locationViewModel.updatePermission(false)
                         if (navController.currentDestination?.route != "permission") {

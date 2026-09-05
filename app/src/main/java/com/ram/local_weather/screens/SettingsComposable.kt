@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.ram.local_weather.ui.theme.LocalWeatherTheme
 import com.ram.local_weather.ui.theme.poppinsFont
+import com.ram.local_weather.util.AppNavigator
 import com.ram.local_weather.viewmodels.LocationViewModel
 
 
@@ -50,9 +51,11 @@ fun SettingsComposable(locationViewModel: LocationViewModel, navController: NavH
     SettingsComposableContent(
         onNavigate = { route ->
             if(route.equals("back")) {
-                navController.popBackStack()
+                AppNavigator.navigateUp()
+//                navController.popBackStack()
             } else {
-                navController.navigate(route)
+                AppNavigator.navigateTo(route)
+//                navController.navigate(route)
             }
         }
     )
